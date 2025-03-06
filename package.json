@@ -13,9 +13,17 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "-": "^0.0.1",
+    "@tanstack/vue-query": "^5.67.1",
+    "@vee-validate/yup": "^4.15.0",
     "pinia": "^3.0.1",
+    "quasar": "^2.18.0",
+    "sass-embedded": "^1.85.1",
+    "vee-validate": "^4.15.0",
     "vue": "^3.5.13",
-    "vue-router": "^4.5.0"
+    "vue-router": "^4.5.0",
+    "vue-toastification": "^2.0.0-rc.5",
+    "yup": "^1.6.1"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.0",
