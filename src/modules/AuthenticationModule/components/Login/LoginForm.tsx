@@ -92,25 +92,26 @@ const LoginForm = () => {
 export default LoginForm;
 
 const FormContainer = styled.div`
-	width: 600px;
-	padding: 30px 20px;
-	border: 1px solid black;
-	border-radius: 15px;
+	width: 100%;
+	max-width: 400px;
+	padding: 32px 24px;
+	border-radius: 20px;
+	background-color: white;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	position: relative;
 
 	@media (max-width: 768px) {
-		width: 90%;
-		padding: 20px 15px;
+		padding: 24px 16px;
 	}
 `;
 
 const TranslateButtonContainer = styled.div`
 	position: absolute;
-	right: 15px;
-	top: 15px;
+	right: 16px;
+	top: 16px;
 `;
 
 const FormHeader = styled.div`
@@ -118,30 +119,30 @@ const FormHeader = styled.div`
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	margin-bottom: 30px;
+	margin-bottom: 24px;
 `;
 
 const HeaderTitle = styled.div`
-	font-size: 64px;
-	font-weight: 400;
+	font-size: 36px;
+	font-weight: 600;
 	color: #13190f;
 
 	@media (max-width: 768px) {
-		font-size: 48px;
+		font-size: 28px;
 	}
 	@media (max-width: 480px) {
-		font-size: 36px;
+		font-size: 24px;
 	}
 `;
 
 const HeaderDescription = styled.div`
-	font-size: 24px;
+	font-size: 16px;
 	font-weight: 400;
 	color: #837e84;
-	margin-top: 10px;
+	margin-top: 8px;
 
 	@media (max-width: 768px) {
-		font-size: 20px;
+		font-size: 14px;
 	}
 `;
 
@@ -150,13 +151,13 @@ const StyledForm = styled(Form)`
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 10px;
+	gap: 12px;
 `;
 
 const LoginButton = styled(Button)`
 	background-color: black;
 	color: white;
-	font-size: 24px;
+	font-size: 18px;
 	width: 100%;
 	font-weight: 500;
 	padding: 10px 0;
@@ -167,14 +168,14 @@ const LoginButton = styled(Button)`
 `;
 
 const BottomBlock = styled.div`
-	margin-top: 40px;
+	margin-top: 32px;
 	display: flex;
 	justify-content: center;
 	width: 100%;
 `;
 
 const ChangeFormContainer = styled.div`
-	font-size: 20px;
+	font-size: 16px;
 	font-weight: 500;
 	color: black;
 `;
@@ -184,7 +185,7 @@ const StyledLink = styled(Link)`
 `;
 
 const ForgotPasswordText = styled.div`
-	font-size: 18px;
+	font-size: 14px;
 	color: black;
 	opacity: 0.7;
 

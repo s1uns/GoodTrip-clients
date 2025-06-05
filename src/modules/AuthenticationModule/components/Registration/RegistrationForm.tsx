@@ -131,60 +131,61 @@ const FormWrapper = styled.div`
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	padding: 40px 20px;
+	padding: 0 20px;
 	box-sizing: border-box;
 `;
 
 const FormContainer = styled.div`
 	width: 100%;
-	max-width: 600px;
+	max-width: 400px;
 	background-color: white;
-	border-radius: 15px;
-	border: 1px solid black;
-	padding: 60px 20px;
+	border-radius: 20px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+	padding: 50px 24px 32px 24px;
 	box-sizing: border-box;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	position: relative;
+
+	@media (max-width: 600px) {
+		padding: 24px 16px;
+	}
 `;
 
 const TranslateButtonContainer = styled.div`
 	position: absolute;
-	right: 10px;
-	top: 10px;
+	right: 16px;
+	top: 16px;
 `;
 
 const HeaderTitle = styled.div`
-	font-family: Inter;
-	font-size: 40px;
-	font-weight: 400;
+	font-size: 32px;
+	font-weight: 600;
 	color: #13190f;
 	text-align: center;
 
 	@media (max-width: 600px) {
-		font-size: 32px;
+		font-size: 26px;
 	}
 `;
 
 const HeaderDescription = styled.div`
-	font-family: Inter;
-	font-size: 20px;
-	line-height: 30px;
+	font-size: 16px;
+	line-height: 24px;
 	font-weight: 400;
 	color: #837e84;
-	margin-top: 10px;
+	margin-top: 8px;
 	text-align: center;
 
 	@media (max-width: 600px) {
-		font-size: 16px;
-		line-height: 24px;
+		font-size: 14px;
 	}
 `;
 
 const StyledForm = styled(Form)`
 	width: 100%;
-	margin-top: 30px;
+	margin-top: 24px;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -194,7 +195,7 @@ const StyledForm = styled(Form)`
 const FullNameContainer = styled.div`
 	width: 100%;
 	display: flex;
-	gap: 20px;
+	gap: 16px;
 
 	@media (max-width: 600px) {
 		flex-direction: column;
@@ -205,24 +206,26 @@ const FullNameContainer = styled.div`
 const RegisterButton = styled(Button)`
 	background-color: black;
 	color: white;
-	font-family: Inter;
 	font-weight: 500;
-	font-size: 20px;
+	font-size: 18px;
 	width: 100%;
-	padding: 12px;
+	padding: 10px 0;
+
+	&:hover {
+		background-color: #333;
+	}
 `;
 
 const BottomBlock = styled.div`
-	margin-top: 20px;
+	margin-top: 32px;
 	display: flex;
 	justify-content: center;
 	width: 100%;
 `;
 
 const ChangeFormContainer = styled.div`
-	font-family: Inter;
 	color: black;
-	font-size: 18px;
+	font-size: 16px;
 	font-weight: 500;
 `;
 
