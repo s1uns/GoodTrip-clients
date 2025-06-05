@@ -24,7 +24,8 @@
 	},
 	"contributors": [],
 	"scripts": {
-		"start": "webpack serve --open --config webpack.config.cjs"
+		"start": "webpack serve --open --config webpack.config.cjs",
+		"build": "webpack --mode production --config webpack.config.cjs"
 	},
 	"dependencies": {
 		"-": "^0.0.1",
