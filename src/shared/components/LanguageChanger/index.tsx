@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { resources } from "../../../config/i18n";
 
-const LanguageChangerButton = () => {
+const LanguageChangerButton = ({ isAuthenticated = false }: { isAuthenticated?: boolean }) => {
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const { i18n } = useTranslation();
 
@@ -30,7 +30,9 @@ const LanguageChangerButton = () => {
 				onClick={handleLanguageMenuOpen}
 				style={{ width: "50px" }}
 			>
-				<LanguageIcon sx={{ fontSize: 45 }} />
+				<LanguageIcon
+					sx={{ fontSize: 45, color: isAuthenticated ? "white" : "black" }}
+				/>
 			</IconButton>
 			<Menu
 				id="language-menu"

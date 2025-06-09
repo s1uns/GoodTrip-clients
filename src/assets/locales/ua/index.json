@@ -29,7 +29,11 @@
 		"password_number": "Пароль має містити хоча б одну цифру.",
 		"password_required": "Пароль є обовʼязковим.",
 		"password_mismatch": "Паролі не співпадають.",
-		"password_confirmation_required": "Підтвердіть пароль!"
+		"password_confirmation_required": "Підтвердіть пароль!",
+		"currentPasswordRequired": "Поточний пароль обов'язковий",
+		"passwordRequired": "Пароль обов'язковий",
+		"confirmPasswordRequired": "Підтвердіть свій пароль!",
+		"passwordsMismatch": "Паролі не збігаються."
 	},
 	"reviewForm": {
 		"title": "Написати відгук",
@@ -41,5 +45,211 @@
 		"submitReview": "Надіслати відгук",
 		"submitting": "Надсилання...",
 		"cancel": "Скасувати"
+	},
+	"restorePassword": "Відновлення пароля",
+	"restorePasswordDescription": "Введіть вашу електронну пошту, і ми надішлемо вам код.",
+	"verificationCode": "Код підтвердження",
+	"newPassword": "Новий пароль",
+	"back": "Назад",
+	"next": "Далі",
+	"confirm": "Підтвердити",
+	"sendCode": "Надіслати код",
+	"invalidEmail": "Некоректна електронна пошта",
+	"emailRequired": "Поле електронної пошти обовʼязкове",
+	"registration": {
+		"confirmTitle": "Підтвердити реєстрацію",
+		"codeLabel": "Код підтвердження"
+	},
+	"common": {
+		"cancel": "Скасувати",
+		"confirm": "Підтвердити"
+	},
+	"error": {
+		"invalidCode": "Невірний код"
+	},
+	"recommendationsPage": {
+		"title": "Рекомендовані місця",
+		"clearFiltersButton": "Очистити фільтри ({{count}})",
+		"filtersAndSearchTitle": "Фільтри та пошук",
+		"searchByNameLabel": "Пошук за назвою місця",
+		"searchPlacesPlaceholder": "Шукати місця...",
+		"searchByCityLabel": "Пошук за містом",
+		"searchCitiesPlaceholder": "Шукати міста...",
+		"uncheckLocationTooltip": "Зніміть прапорець «Використовувати моє місцезнаходження», щоб ввести місто вручну",
+		"useMyLocationLabel": "Використовувати моє місцезнаходження",
+		"clearCityFieldTooltip": "Очистіть поле міста, щоб використовувати ваше місцезнаходження",
+		"showOnlyFavoritesLabel": "Показувати лише обрані",
+		"distanceFilterLabel": "Фільтр відстані",
+		"enableDistanceFilterTooltip": "Введіть місто або використайте своє місцезнаходження, щоб увімкнути фільтрацію за відстанню",
+		"selectDistancePlaceholder": "Виберіть відстань",
+		"distanceOption": {
+			"none": "Жодна",
+			"100": "100 м",
+			"250": "250 м",
+			"500": "500 м",
+			"1000": "1 км",
+			"2500": "2.5 км"
+		},
+		"enableDistanceFilterMessage": "Введіть місто або використайте своє місцезнаходження, щоб увімкнути",
+		"useProfilePreferencesTitle": "Використовувати мої налаштування профілю",
+		"useProfilePreferencesDescription": "Автоматично заповнювати фільтри збереженими налаштуваннями подорожей",
+		"travelTagsLabel": "Теги подорожей",
+		"selectTravelTagsPlaceholder": "Виберіть теги подорожей...",
+		"travelCategoriesLabel": "Категорії подорожей",
+		"selectTravelCategoriesPlaceholder": "Виберіть категорії подорожей...",
+		"sortByLabel": "Сортувати за",
+		"sortByPlaceholder": "Сортувати за",
+		"sortByOptionRating": "Рейтинг",
+		"sortByOptionName": "Назва",
+		"sortByOptionDistance": "Відстань",
+		"showingPlaces": "Показано {{filteredCount}} з {{totalCount}} місць",
+		"distanceUnit": "км",
+		"moreTags": "+{{count}} більше",
+		"moreCategories": "+{{count}} більше",
+		"noPlacesFoundTitle": "Місць не знайдено",
+		"noPlacesFoundMessage": "Спробуйте змінити фільтри або умови пошуку",
+		"clearAllFiltersButton": "Очистити всі фільтри"
+	},
+	"subscriptions": "Підписки",
+	"security": "Безпека",
+	"loadingUsers": "Завантаження користувачів...",
+	"errorLoadingUsers": "Помилка завантаження користувачів",
+	"failedToLoadUsers": "Не вдалося завантажити користувачів. Будь ласка, спробуйте ще раз.",
+	"tryAgain": "Спробувати ще раз",
+	"discoverUsers": "Відкрийте для себе користувачів",
+	"findAndConnect": "Знаходьте та спілкуйтеся з попутниками з усього світу",
+	"clearFilters": "Очистити фільтри",
+	"searchAndFilter": "Пошук та фільтр",
+	"findUsersByCriteria": "Знаходьте користувачів за ім’ям, іменем користувача або статусом підписки",
+	"searchUsers": "Пошук користувачів",
+	"searchByNameOrUsername": "Пошук за ім'ям або іменем користувача...",
+	"subscriptionStatus": "Статус підписки",
+	"allUsers": "Усі користувачі",
+	"subscribed": "Підписані",
+	"notSubscribed": "Не підписані",
+	"sortBy": "Сортувати за",
+	"highestRating": "Найвищий рейтинг",
+	"lowestRating": "Найнижчий рейтинг",
+	"mostFollowers": "Найбільше підписників",
+	"leastFollowers": "Найменше підписників",
+	"mostReviews": "Найбільше відгуків",
+	"leastReviews": "Найменше відгуків",
+	"nameAsc": "Ім'я (А-Я)",
+	"nameDesc": "Ім'я (Я-А)",
+	"showingUsers": "Показано {{current}} з {{total}} користувачів",
+	"matchesYourFilters": "({{totalFiltered}} відповідають вашим фільтрам)",
+	"noUsersFound": "Користувачів не знайдено",
+	"tryAdjustingFilters": "Спробуйте змінити критерії пошуку або фільтрації",
+	"noUsersAvailable": "Наразі користувачів немає",
+	"clearAllFilters": "Очистити всі фільтри",
+	"rating": "Рейтинг",
+	"reviews": "Відгуки",
+	"followers": "підписників",
+	"joined": "Приєднався {{date}}",
+	"unsubscribe": "Відписатися",
+	"subscribe": "Підписатися",
+	"loadMoreUsers": "Завантажити більше користувачів",
+	"loadingMoreUsers": "Завантаження більше користувачів...",
+	"youReachedEnd": "Ви досягли кінця! Показано всіх {{count}} користувачів.",
+	"securitySettings": {
+		"title": "Налаштування безпеки",
+		"description": "Керуйте безпекою свого облікового запису"
+	},
+	"fields": {
+		"currentPassword": "Поточний пароль",
+		"newPassword": "Новий пароль",
+		"confirmNewPassword": "Підтвердіть новий пароль"
+	},
+	"placeholders": {
+		"enterCurrentPassword": "Введіть поточний пароль",
+		"enterNewPassword": "Введіть новий пароль",
+		"confirmNewPassword": "Підтвердіть новий пароль"
+	},
+	"passwordValidation": {
+		"length": "пароль повинен містити 8 або більше символів",
+		"lowerCase": "пароль повинен містити хоча б 1 малу літеру",
+		"upperCase": "пароль повинен містити хоча б 1 велику літеру",
+		"number": "пароль повинен містити хоча б 1 цифру"
+	},
+	"passwordRules": {
+		"header": "Пароль повинен містити:",
+		"minChars": "Не менше 8 символів",
+		"lowerCase": "Хоча б 1 малу літеру",
+		"upperCase": "Хоча б 1 велику літеру",
+		"number": "Хоча б 1 цифру"
+	},
+	"passwordStrength": {
+		"strong": "Надійний",
+		"medium": "Середній",
+		"weak": "Слабкий"
+	},
+
+	"validationStatus": {
+		"passwordsMatch": "Паролі збігаються"
+	},
+	"buttons": {
+		"changePassword": "Змінити пароль",
+		"changingPassword": "Зміна пароля..."
+	},
+	"toast": {
+		"passwordChangedSuccess": "Пароль успішно змінено!",
+		"passwordChangeFailed": "Не вдалося змінити пароль. Будь ласка, спробуйте ще раз."
+	},
+	"tabs": {
+		"my_subscriptions": "Мої підписки",
+		"my_subscribers": "Мої підписники"
+	},
+	"subscriptionsTab": {
+		"title": "Мої підписки",
+		"description": "Користувачі, на яких ви підписані",
+		"search_placeholder": "Шукати підписки...",
+		"sort_by_placeholder": "Сортувати за",
+		"sort_name_asc": "Ім'я (А-Я)",
+		"sort_name_desc": "Ім'я (Я-А)",
+		"sort_subscribers_asc": "Підписники (Мін-Макс)",
+		"sort_subscribers_desc": "Підписники (Макс-Мін)",
+		"sort_rating_asc": "Рейтинг (Мін-Макс)",
+		"sort_rating_desc": "Рейтинг (Макс-Мін)",
+		"no_subscriptions_found": "Підписки не знайдено",
+		"try_different_search": "Спробуйте інший пошуковий запит",
+		"no_subscriptions_yet": "Ви ще ні на кого не підписані",
+		"unsubscribe_button": "Відписатись",
+		"load_more_button": "Завантажити ще",
+		"loading": "Завантаження..."
+	},
+	"subscribers": {
+		"title": "Мої підписники",
+		"description": "Користувачі, які на вас підписані",
+		"search_placeholder": "Шукати підписників...",
+		"sort_by_placeholder": "Сортувати за",
+		"sort_name_asc": "Ім'я (А-Я)",
+		"sort_name_desc": "Ім'я (Я-А)",
+		"sort_subscribers_asc": "Підписники (Мін-Макс)",
+		"sort_subscribers_desc": "Підписники (Макс-Мін)",
+		"sort_rating_asc": "Рейтинг (Мін-Макс)",
+		"sort_rating_desc": "Рейтинг (Макс-Мін)",
+		"no_subscribers_found": "Підписників не знайдено",
+		"try_different_search": "Спробуйте інший пошуковий запит",
+		"no_subscribers_yet": "У вас ще немає підписників",
+		"view_profile_button": "Переглянути профіль",
+		"load_more_button": "Завантажити ще",
+		"loading": "Завантаження..."
+	},
+	"profileInfo": {
+		"title": "Інформація про профіль",
+		"description": "Керуйте своєю інформацією профілю",
+		"edit": "Редагувати",
+		"save": "Зберегти",
+		"firstName": "Ім'я",
+		"lastName": "Прізвище",
+		"email": "Електронна пошта",
+		"bio": "Біографія",
+		"travelPreferences": "Теги подорожей",
+		"selectTravelPreferences": "Виберіть свої переваги подорожей...",
+		"travelCategories": "Категорії подорожей",
+		"selectTravelCategories": "Виберіть бажані категорії подорожей...",
+		"userRating": "{{rating}} Рейтинг користувача",
+		"reviewsWritten": "{{count}} Написано відгуків",
+		"joinedOn": "Приєднався {{date}}"
 	}
 }

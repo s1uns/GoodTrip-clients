@@ -6,4 +6,5 @@ export enum ROUTES {
 	REPORTS = "/reports",
 	PREFERENCES = "/preferences",
 	USERS = "/users",
+	RESTOREPASSWORD = "/restore-password",
 }

@@ -4,6 +4,7 @@ import { ROUTES } from "../shared/constants/routes";
 import {
 	LoginPage,
 	RegistrationPage,
+	RestorePasswordPage,
 } from "../modules/AuthenticationModule/pages";
 
 const GuestRoot = () => {
@@ -12,6 +13,10 @@ const GuestRoot = () => {
 			<Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
 			<Route path={ROUTES.LOGIN} element={<LoginPage />} />
 			<Route path={ROUTES.REGISTRATION} element={<RegistrationPage />} />
+			<Route
+				path={ROUTES.RESTOREPASSWORD}
+				element={<RestorePasswordPage />}
+			/>
 			<Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />
 		</>
 	);

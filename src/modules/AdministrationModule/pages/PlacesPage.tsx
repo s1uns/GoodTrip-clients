@@ -1,0 +1,1232 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { MultiSelect } from "@/components/ui/multi-select";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
+import {
+	Trash2,
+	Plus,
+	Loader2,
+	Search,
+	MapPin,
+	Edit,
+	Save,
+	X,
+	Upload,
+	Star,
+	ImageIcon,
+} from "lucide-react";
+
+interface Place {
+	id: string;
+	name: string;
+	address: string;
+	image: string;
+	travelCategories: string[];
+	travelTags: string[];
+	rating: number;
+	coordinates: {
+		lat: number;
+		lng: number;
+	};
+}
+
+const travelCategoriesOptions = [
+	{ label: "Tropical Beaches", value: "tropical-beaches" },
+	{ label: "Mountain Ranges", value: "mountain-ranges" },
+	{ label: "Metropolitan Cities", value: "metropolitan-cities" },
+	{ label: "Rural Countryside", value: "rural-countryside" },
+	{ label: "Ancient Ruins", value: "ancient-ruins" },
+	{ label: "National Parks", value: "national-parks" },
+	{ label: "Private Islands", value: "private-islands" },
+	{ label: "Desert Landscapes", value: "desert-landscapes" },
+];
+
+const travelTagsOptions = [
+	{ label: "Adventure Sports", value: "adventure-sports" },
+	{ label: "Cultural Immersion", value: "cultural-immersion" },
+	{ label: "Food & Cuisine", value: "food-cuisine" },
+	{ label: "Photography", value: "photography" },
+	{ label: "Historical Sites", value: "historical-sites" },
+	{ label: "Nature & Wildlife", value: "nature-wildlife" },
+	{ label: "Relaxation & Wellness", value: "relaxation-wellness" },
+	{ label: "Nightlife & Entertainment", value: "nightlife-entertainment" },
+	{ label: "Shopping & Markets", value: "shopping-markets" },
+	{ label: "Art & Museums", value: "art-museums" },
+];
+
+const mockPlaces: Place[] = [
+	{
+		id: "1",
+		name: "Santorini, Greece",
+		address: "Santorini, Cyclades, Greece",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["tropical-beaches", "ancient-ruins"],
+		travelTags: [
+			"photography",
+			"relaxation-wellness",
+			"cultural-immersion",
+		],
+		rating: 4.8,
+		coordinates: { lat: 36.3932, lng: 25.4615 },
+	},
+	{
+		id: "2",
+		name: "Machu Picchu, Peru",
+		address: "Aguas Calientes, Cusco Region, Peru",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["mountain-ranges", "ancient-ruins"],
+		travelTags: ["adventure-sports", "historical-sites", "photography"],
+		rating: 4.9,
+		coordinates: { lat: -13.1631, lng: -72.545 },
+	},
+	{
+		id: "3",
+		name: "Tokyo, Japan",
+		address: "Tokyo, Japan",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["metropolitan-cities"],
+		travelTags: [
+			"food-cuisine",
+			"cultural-immersion",
+			"shopping-markets",
+			"nightlife-entertainment",
+		],
+		rating: 4.7,
+		coordinates: { lat: 35.6762, lng: 139.6503 },
+	},
+	{
+		id: "4",
+		name: "Serengeti National Park",
+		address: "Serengeti, Tanzania",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["national-parks"],
+		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
+		rating: 4.9,
+		coordinates: { lat: -2.3333, lng: 34.8333 },
+	},
+	{
+		id: "5",
+		name: "Maldives Resort",
+		address: "Maldives",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["private-islands", "tropical-beaches"],
+		travelTags: ["relaxation-wellness", "photography"],
+		rating: 4.8,
+		coordinates: { lat: 3.2028, lng: 73.2207 },
+	},
+	{
+		id: "4",
+		name: "Serengeti National Park",
+		address: "Serengeti, Tanzania",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["national-parks"],
+		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
+		rating: 4.9,
+		coordinates: { lat: -2.3333, lng: 34.8333 },
+	},
+	{
+		id: "5",
+		name: "Maldives Resort",
+		address: "Maldives",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["private-islands", "tropical-beaches"],
+		travelTags: ["relaxation-wellness", "photography"],
+		rating: 4.8,
+		coordinates: { lat: 3.2028, lng: 73.2207 },
+	},
+	{
+		id: "4",
+		name: "Serengeti National Park",
+		address: "Serengeti, Tanzania",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["national-parks"],
+		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
+		rating: 4.9,
+		coordinates: { lat: -2.3333, lng: 34.8333 },
+	},
+	{
+		id: "5",
+		name: "Maldives Resort",
+		address: "Maldives",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["private-islands", "tropical-beaches"],
+		travelTags: ["relaxation-wellness", "photography"],
+		rating: 4.8,
+		coordinates: { lat: 3.2028, lng: 73.2207 },
+	},
+	{
+		id: "4",
+		name: "Serengeti National Park",
+		address: "Serengeti, Tanzania",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["national-parks"],
+		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
+		rating: 4.9,
+		coordinates: { lat: -2.3333, lng: 34.8333 },
+	},
+	{
+		id: "5",
+		name: "Maldives Resort",
+		address: "Maldives",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["private-islands", "tropical-beaches"],
+		travelTags: ["relaxation-wellness", "photography"],
+		rating: 4.8,
+		coordinates: { lat: 3.2028, lng: 73.2207 },
+	},
+	{
+		id: "4",
+		name: "Serengeti National Park",
+		address: "Serengeti, Tanzania",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["national-parks"],
+		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
+		rating: 4.9,
+		coordinates: { lat: -2.3333, lng: 34.8333 },
+	},
+	{
+		id: "5",
+		name: "Maldives Resort",
+		address: "Maldives",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["private-islands", "tropical-beaches"],
+		travelTags: ["relaxation-wellness", "photography"],
+		rating: 4.8,
+		coordinates: { lat: 3.2028, lng: 73.2207 },
+	},
+	{
+		id: "4",
+		name: "Serengeti National Park",
+		address: "Serengeti, Tanzania",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["national-parks"],
+		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
+		rating: 4.9,
+		coordinates: { lat: -2.3333, lng: 34.8333 },
+	},
+	{
+		id: "5",
+		name: "Maldives Resort",
+		address: "Maldives",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["private-islands", "tropical-beaches"],
+		travelTags: ["relaxation-wellness", "photography"],
+		rating: 4.8,
+		coordinates: { lat: 3.2028, lng: 73.2207 },
+	},
+	{
+		id: "4",
+		name: "Serengeti National Park",
+		address: "Serengeti, Tanzania",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["national-parks"],
+		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
+		rating: 4.9,
+		coordinates: { lat: -2.3333, lng: 34.8333 },
+	},
+	{
+		id: "5",
+		name: "Maldives Resort",
+		address: "Maldives",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["private-islands", "tropical-beaches"],
+		travelTags: ["relaxation-wellness", "photography"],
+		rating: 4.8,
+		coordinates: { lat: 3.2028, lng: 73.2207 },
+	},
+	{
+		id: "4",
+		name: "Serengeti National Park",
+		address: "Serengeti, Tanzania",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["national-parks"],
+		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
+		rating: 4.9,
+		coordinates: { lat: -2.3333, lng: 34.8333 },
+	},
+	{
+		id: "5",
+		name: "Maldives Resort",
+		address: "Maldives",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["private-islands", "tropical-beaches"],
+		travelTags: ["relaxation-wellness", "photography"],
+		rating: 4.8,
+		coordinates: { lat: 3.2028, lng: 73.2207 },
+	},
+	{
+		id: "4",
+		name: "Serengeti National Park",
+		address: "Serengeti, Tanzania",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["national-parks"],
+		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
+		rating: 4.9,
+		coordinates: { lat: -2.3333, lng: 34.8333 },
+	},
+	{
+		id: "5",
+		name: "Maldives Resort",
+		address: "Maldives",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["private-islands", "tropical-beaches"],
+		travelTags: ["relaxation-wellness", "photography"],
+		rating: 4.8,
+		coordinates: { lat: 3.2028, lng: 73.2207 },
+	},
+	{
+		id: "4",
+		name: "Serengeti National Park",
+		address: "Serengeti, Tanzania",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["national-parks"],
+		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
+		rating: 4.9,
+		coordinates: { lat: -2.3333, lng: 34.8333 },
+	},
+	{
+		id: "5",
+		name: "Maldives Resort",
+		address: "Maldives",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["private-islands", "tropical-beaches"],
+		travelTags: ["relaxation-wellness", "photography"],
+		rating: 4.8,
+		coordinates: { lat: 3.2028, lng: 73.2207 },
+	},
+	{
+		id: "4",
+		name: "Serengeti National Park",
+		address: "Serengeti, Tanzania",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["national-parks"],
+		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
+		rating: 4.9,
+		coordinates: { lat: -2.3333, lng: 34.8333 },
+	},
+	{
+		id: "5",
+		name: "Maldives Resort",
+		address: "Maldives",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["private-islands", "tropical-beaches"],
+		travelTags: ["relaxation-wellness", "photography"],
+		rating: 4.8,
+		coordinates: { lat: 3.2028, lng: 73.2207 },
+	},
+	{
+		id: "4",
+		name: "Serengeti National Park",
+		address: "Serengeti, Tanzania",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["national-parks"],
+		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
+		rating: 4.9,
+		coordinates: { lat: -2.3333, lng: 34.8333 },
+	},
+	{
+		id: "5",
+		name: "Maldives Resort",
+		address: "Maldives",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["private-islands", "tropical-beaches"],
+		travelTags: ["relaxation-wellness", "photography"],
+		rating: 4.8,
+		coordinates: { lat: 3.2028, lng: 73.2207 },
+	},
+	{
+		id: "4",
+		name: "Serengeti National Park",
+		address: "Serengeti, Tanzania",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["national-parks"],
+		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
+		rating: 4.9,
+		coordinates: { lat: -2.3333, lng: 34.8333 },
+	},
+	{
+		id: "5",
+		name: "Maldives Resort",
+		address: "Maldives",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["private-islands", "tropical-beaches"],
+		travelTags: ["relaxation-wellness", "photography"],
+		rating: 4.8,
+		coordinates: { lat: 3.2028, lng: 73.2207 },
+	},
+	{
+		id: "4",
+		name: "Serengeti National Park",
+		address: "Serengeti, Tanzania",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["national-parks"],
+		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
+		rating: 4.9,
+		coordinates: { lat: -2.3333, lng: 34.8333 },
+	},
+	{
+		id: "5",
+		name: "Maldives Resort",
+		address: "Maldives",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["private-islands", "tropical-beaches"],
+		travelTags: ["relaxation-wellness", "photography"],
+		rating: 4.8,
+		coordinates: { lat: 3.2028, lng: 73.2207 },
+	},
+	{
+		id: "4",
+		name: "Serengeti National Park",
+		address: "Serengeti, Tanzania",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["national-parks"],
+		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
+		rating: 4.9,
+		coordinates: { lat: -2.3333, lng: 34.8333 },
+	},
+	{
+		id: "5",
+		name: "Maldives Resort",
+		address: "Maldives",
+		image: "/placeholder.svg?height=200&width=300",
+		travelCategories: ["private-islands", "tropical-beaches"],
+		travelTags: ["relaxation-wellness", "photography"],
+		rating: 4.8,
+		coordinates: { lat: 3.2028, lng: 73.2207 },
+	},
+];
+
+const ITEMS_PER_PAGE = 6;
+
+const simulateApiCall = <T,>(
+	items: T[],
+	page: number,
+	pageSize: number,
+	searchQuery: string,
+	searchFields: (keyof T)[],
+	delay = 800,
+): Promise<{
+	items: T[];
+	hasMore: boolean;
+	total: number;
+}> => {
+	return new Promise((resolve) => {
+		setTimeout(() => {
+			let filtered = items;
+			if (searchQuery) {
+				filtered = items.filter((item) =>
+					searchFields.some((field) => {
+						const value = item[field];
+						return (
+							typeof value === "string" &&
+							value
+								.toLowerCase()
+								.includes(searchQuery.toLowerCase())
+						);
+					}),
+				);
+			}
+
+			const startIndex = (page - 1) * pageSize;
+			const endIndex = startIndex + pageSize;
+			const paginatedItems = filtered.slice(startIndex, endIndex);
+			const hasMore = endIndex < filtered.length;
+
+			resolve({
+				items: paginatedItems,
+				hasMore,
+				total: filtered.length,
+			});
+		}, delay);
+	});
+};
+
+const AdminPlacesPage = () => {
+	const [places, setPlaces] = useState<Place[]>([]);
+	const [placesLoading, setPlacesLoading] = useState(true);
+	const [placesLoadingMore, setPlacesLoadingMore] = useState(false);
+	const [placesPage, setPlacesPage] = useState(1);
+	const [placesHasMore, setPlacesHasMore] = useState(true);
+	const [placesTotalCount, setPlacesTotalCount] = useState(0);
+	const [placesSearch, setPlacesSearch] = useState("");
+
+	const [newPlaceName, setNewPlaceName] = useState("");
+	const [newPlaceAddress, setNewPlaceAddress] = useState("");
+	const [newPlaceImage, setNewPlaceImage] = useState("");
+	const [newPlaceCategories, setNewPlaceCategories] = useState<string[]>([]);
+	const [newPlaceTags, setNewPlaceTags] = useState<string[]>([]);
+	const [addingPlace, setAddingPlace] = useState(false);
+
+	const [editingPlace, setEditingPlace] = useState<string | null>(null);
+	const [editPlaceName, setEditPlaceName] = useState("");
+	const [editPlaceAddress, setEditPlaceAddress] = useState("");
+	const [editPlaceImage, setEditPlaceImage] = useState("");
+	const [editPlaceCategories, setEditPlaceCategories] = useState<string[]>(
+		[],
+	);
+	const [editPlaceTags, setEditPlaceTags] = useState<string[]>([]);
+
+	const [deleteModal, setDeleteModal] = useState<{
+		isOpen: boolean;
+		placeId: string | null;
+		placeName: string;
+		isLoading: boolean;
+	}>({
+		isOpen: false,
+		placeId: null,
+		placeName: "",
+		isLoading: false,
+	});
+
+	useEffect(() => {
+		loadPlaces(true);
+	}, []);
+
+	useEffect(() => {
+		setPlaces([]);
+		setPlacesPage(1);
+		setPlacesHasMore(true);
+		loadPlaces(true);
+	}, [placesSearch]);
+
+	const loadPlaces = async (isInitial = false) => {
+		if (isInitial) {
+			setPlacesLoading(true);
+		} else {
+			setPlacesLoadingMore(true);
+		}
+
+		try {
+			const response = await simulateApiCall(
+				mockPlaces,
+				isInitial ? 1 : placesPage,
+				ITEMS_PER_PAGE,
+				placesSearch,
+				["name", "address"],
+			);
+
+			if (isInitial) {
+				setPlaces(response.items);
+				setPlacesPage(2);
+			} else {
+				setPlaces((prev) => [...prev, ...response.items]);
+				setPlacesPage((prev) => prev + 1);
+			}
+
+			setPlacesHasMore(response.hasMore);
+			setPlacesTotalCount(response.total);
+		} catch (error) {
+			console.error("Error loading places:", error);
+		} finally {
+			setPlacesLoading(false);
+			setPlacesLoadingMore(false);
+		}
+	};
+
+	const handleAddPlace = async () => {
+		if (!newPlaceName.trim() || !newPlaceAddress.trim()) return;
+
+		setAddingPlace(true);
+		try {
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+
+			const newPlace: Place = {
+				id: Date.now().toString(),
+				name: newPlaceName.trim(),
+				address: newPlaceAddress.trim(),
+				image: newPlaceImage || "/placeholder.svg?height=200&width=300",
+				travelCategories: newPlaceCategories,
+				travelTags: newPlaceTags,
+				rating: 0,
+				coordinates: { lat: 0, lng: 0 }, 
+			};
+
+			mockPlaces.unshift(newPlace);
+
+			if (
+				!placesSearch ||
+				newPlace.name
+					.toLowerCase()
+					.includes(placesSearch.toLowerCase()) ||
+				newPlace.address
+					.toLowerCase()
+					.includes(placesSearch.toLowerCase())
+			) {
+				setPlaces((prev) => [newPlace, ...prev]);
+				setPlacesTotalCount((prev) => prev + 1);
+			}
+
+			setNewPlaceName("");
+			setNewPlaceAddress("");
+			setNewPlaceImage("");
+			setNewPlaceCategories([]);
+			setNewPlaceTags([]);
+		} catch (error) {
+			console.error("Error adding place:", error);
+		} finally {
+			setAddingPlace(false);
+		}
+	};
+
+	const handleDeletePlace = async () => {
+		if (!deleteModal.placeId) return;
+
+		setDeleteModal((prev) => ({ ...prev, isLoading: true }));
+
+		try {
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+
+			const index = mockPlaces.findIndex(
+				(p) => p.id === deleteModal.placeId,
+			);
+			if (index !== -1) {
+				mockPlaces.splice(index, 1);
+			}
+
+			setPlaces((prev) =>
+				prev.filter((p) => p.id !== deleteModal.placeId),
+			);
+			setPlacesTotalCount((prev) => prev - 1);
+
+			setDeleteModal({
+				isOpen: false,
+				placeId: null,
+				placeName: "",
+				isLoading: false,
+			});
+		} catch (error) {
+			console.error("Error deleting place:", error);
+			setDeleteModal((prev) => ({ ...prev, isLoading: false }));
+		}
+	};
+
+	const startEditPlace = (place: Place) => {
+		setEditingPlace(place.id);
+		setEditPlaceName(place.name);
+		setEditPlaceAddress(place.address);
+		setEditPlaceImage(place.image);
+		setEditPlaceCategories(place.travelCategories);
+		setEditPlaceTags(place.travelTags);
+	};
+
+	const saveEditPlace = async () => {
+		if (!editPlaceName.trim() || !editPlaceAddress.trim()) return;
+
+		try {
+			await new Promise((resolve) => setTimeout(resolve, 500));
+
+			const index = mockPlaces.findIndex((p) => p.id === editingPlace);
+			if (index !== -1) {
+				mockPlaces[index] = {
+					...mockPlaces[index],
+					name: editPlaceName.trim(),
+					address: editPlaceAddress.trim(),
+					image: editPlaceImage,
+					travelCategories: editPlaceCategories,
+					travelTags: editPlaceTags,
+				};
+			}
+
+			setPlaces((prev) =>
+				prev.map((p) =>
+					p.id === editingPlace
+						? {
+								...p,
+								name: editPlaceName.trim(),
+								address: editPlaceAddress.trim(),
+								image: editPlaceImage,
+								travelCategories: editPlaceCategories,
+								travelTags: editPlaceTags,
+						  }
+						: p,
+				),
+			);
+
+			setEditingPlace(null);
+		} catch (error) {
+			console.error("Error updating place:", error);
+		}
+	};
+
+	const openDeleteModal = (place: Place) => {
+		setDeleteModal({
+			isOpen: true,
+			placeId: place.id,
+			placeName: place.name,
+			isLoading: false,
+		});
+	};
+
+	const closeDeleteModal = () => {
+		if (!deleteModal.isLoading) {
+			setDeleteModal({
+				isOpen: false,
+				placeId: null,
+				placeName: "",
+				isLoading: false,
+			});
+		}
+	};
+
+	return (
+		<div className="container mx-auto px-4 py-8">
+			{/* Header */}
+			<div className="mb-6">
+				<h1 className="text-3xl font-bold flex items-center gap-2">
+					<MapPin className="w-8 h-8" />
+					Places Management
+				</h1>
+				<p className="text-muted-foreground mt-1">
+					Manage travel destinations and places on the platform
+				</p>
+			</div>
+
+			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+				{/* Add New Place */}
+				<Card>
+					<CardHeader>
+						<CardTitle className="flex items-center gap-2">
+							<Plus className="w-5 h-5" />
+							Add New Place
+						</CardTitle>
+						<CardDescription>
+							Create a new travel destination
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="space-y-4">
+						{/* Image Upload */}
+						<div className="space-y-2">
+							<Label>Place Image</Label>
+							<div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4">
+								{newPlaceImage ? (
+									<div className="relative">
+										<img
+											src={
+												newPlaceImage ||
+												"/placeholder.svg"
+											}
+											alt="Place preview"
+											className="w-full h-32 object-cover rounded-lg"
+										/>
+										<Button
+											variant="outline"
+											size="sm"
+											className="absolute top-2 right-2"
+											onClick={() => setNewPlaceImage("")}
+										>
+											<X className="w-4 h-4" />
+										</Button>
+									</div>
+								) : (
+									<div className="text-center">
+										<ImageIcon className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+										<p className="text-sm text-muted-foreground mb-2">
+											Upload place image
+										</p>
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() =>
+												setNewPlaceImage(
+													"/placeholder.svg?height=200&width=300",
+												)
+											}
+										>
+											<Upload className="w-4 h-4 mr-2" />
+											Choose Image
+										</Button>
+									</div>
+								)}
+							</div>
+						</div>
+
+						{/* Place Name */}
+						<div className="space-y-2">
+							<Label htmlFor="new-place-name">Place Name</Label>
+							<Input
+								id="new-place-name"
+								placeholder="e.g., Santorini, Greece"
+								value={newPlaceName}
+								onChange={(e) =>
+									setNewPlaceName(e.target.value)
+								}
+							/>
+						</div>
+
+						{/* Address */}
+						<div className="space-y-2">
+							<Label htmlFor="new-place-address">Address</Label>
+							<Input
+								id="new-place-address"
+								placeholder="Full address or location"
+								value={newPlaceAddress}
+								onChange={(e) =>
+									setNewPlaceAddress(e.target.value)
+								}
+							/>
+						</div>
+
+						{/* Categories */}
+						<div className="space-y-2">
+							<Label>Categories</Label>
+							<MultiSelect
+								options={travelCategoriesOptions}
+								selected={newPlaceCategories}
+								onChange={setNewPlaceCategories}
+								placeholder="Select categories..."
+							/>
+						</div>
+
+						{/* Tags */}
+						<div className="space-y-2">
+							<Label>Tags</Label>
+							<MultiSelect
+								options={travelTagsOptions}
+								selected={newPlaceTags}
+								onChange={setNewPlaceTags}
+								placeholder="Select tags..."
+							/>
+						</div>
+
+						<Button
+							onClick={handleAddPlace}
+							disabled={
+								!newPlaceName.trim() ||
+								!newPlaceAddress.trim() ||
+								addingPlace
+							}
+							className="w-full"
+						>
+							{addingPlace ? (
+								<>
+									<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+									Adding...
+								</>
+							) : (
+								<>
+									<Plus className="w-4 h-4 mr-2" />
+									Add Place
+								</>
+							)}
+						</Button>
+					</CardContent>
+				</Card>
+
+				{/* Places List */}
+				<Card className="lg:col-span-2">
+					<CardHeader>
+						<CardTitle>Places List ({placesTotalCount})</CardTitle>
+						<CardDescription>
+							Manage existing travel destinations
+						</CardDescription>
+						<div className="relative">
+							<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+							<Input
+								placeholder="Search places..."
+								value={placesSearch}
+								onChange={(e) =>
+									setPlacesSearch(e.target.value)
+								}
+								className="pl-8"
+							/>
+						</div>
+					</CardHeader>
+					<CardContent>
+						{placesLoading ? (
+							<div className="flex items-center justify-center py-8">
+								<Loader2 className="h-6 w-6 animate-spin mr-2" />
+								<span>Loading places...</span>
+							</div>
+						) : places.length === 0 ? (
+							<div className="text-center py-8">
+								<MapPin className="w-12 h-12 mx-auto text-muted-foreground opacity-50 mb-4" />
+								<p className="text-muted-foreground">
+									No places found
+								</p>
+							</div>
+						) : (
+							<>
+								<div className="space-y-4">
+									{places.map((place) => (
+										<div
+											key={place.id}
+											className="border rounded-lg p-4"
+										>
+											{editingPlace === place.id ? (
+												<div className="space-y-4">
+													{/* Edit Image */}
+													<div className="space-y-2">
+														<Label>
+															Place Image
+														</Label>
+														<div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4">
+															{editPlaceImage ? (
+																<div className="relative">
+																	<img
+																		src={
+																			editPlaceImage ||
+																			"/placeholder.svg"
+																		}
+																		alt="Place preview"
+																		className="w-full h-32 object-cover rounded-lg"
+																	/>
+																	<Button
+																		variant="outline"
+																		size="sm"
+																		className="absolute top-2 right-2"
+																		onClick={() =>
+																			setEditPlaceImage(
+																				"",
+																			)
+																		}
+																	>
+																		<X className="w-4 h-4" />
+																	</Button>
+																</div>
+															) : (
+																<div className="text-center">
+																	<ImageIcon className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+																	<Button
+																		variant="outline"
+																		size="sm"
+																		onClick={() =>
+																			setEditPlaceImage(
+																				"/placeholder.svg?height=200&width=300",
+																			)
+																		}
+																	>
+																		<Upload className="w-4 h-4 mr-2" />
+																		Choose
+																		Image
+																	</Button>
+																</div>
+															)}
+														</div>
+													</div>
+
+													<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+														<div className="space-y-2">
+															<Label>
+																Place Name
+															</Label>
+															<Input
+																value={
+																	editPlaceName
+																}
+																onChange={(e) =>
+																	setEditPlaceName(
+																		e.target
+																			.value,
+																	)
+																}
+																placeholder="Place name"
+															/>
+														</div>
+														<div className="space-y-2">
+															<Label>
+																Address
+															</Label>
+															<Input
+																value={
+																	editPlaceAddress
+																}
+																onChange={(e) =>
+																	setEditPlaceAddress(
+																		e.target
+																			.value,
+																	)
+																}
+																placeholder="Address"
+															/>
+														</div>
+													</div>
+
+													<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+														<div className="space-y-2">
+															<Label>
+																Categories
+															</Label>
+															<MultiSelect
+																options={
+																	travelCategoriesOptions
+																}
+																selected={
+																	editPlaceCategories
+																}
+																onChange={
+																	setEditPlaceCategories
+																}
+																placeholder="Select categories..."
+															/>
+														</div>
+														<div className="space-y-2">
+															<Label>Tags</Label>
+															<MultiSelect
+																options={
+																	travelTagsOptions
+																}
+																selected={
+																	editPlaceTags
+																}
+																onChange={
+																	setEditPlaceTags
+																}
+																placeholder="Select tags..."
+															/>
+														</div>
+													</div>
+
+													<div className="flex gap-2">
+														<Button
+															size="sm"
+															onClick={
+																saveEditPlace
+															}
+														>
+															<Save className="w-4 h-4 mr-1" />
+															Save
+														</Button>
+														<Button
+															variant="outline"
+															size="sm"
+															onClick={() =>
+																setEditingPlace(
+																	null,
+																)
+															}
+														>
+															<X className="w-4 h-4 mr-1" />
+															Cancel
+														</Button>
+													</div>
+												</div>
+											) : (
+												<div className="flex gap-4">
+													{/* Place Image */}
+													<div className="flex-shrink-0">
+														<img
+															src={
+																place.image ||
+																"/placeholder.svg"
+															}
+															alt={place.name}
+															className="w-24 h-24 object-cover rounded-lg"
+														/>
+													</div>
+
+													{/* Place Info */}
+													<div className="flex-1 min-w-0">
+														<div className="flex items-start justify-between">
+															<div className="flex-1 min-w-0">
+																<h3 className="font-semibold text-lg truncate">
+																	{place.name}
+																</h3>
+																<p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+																	<MapPin className="w-4 h-4 flex-shrink-0" />
+																	<span className="truncate">
+																		{
+																			place.address
+																		}
+																	</span>
+																</p>
+																{place.rating >
+																	0 && (
+																	<div className="flex items-center gap-1 mt-1">
+																		<Star className="w-4 h-4 text-yellow-400 fill-current" />
+																		<span className="text-sm font-medium">
+																			{place.rating.toFixed(
+																				1,
+																			)}
+																		</span>
+																	</div>
+																)}
+															</div>
+
+															<div className="flex gap-2 ml-4">
+																<Button
+																	variant="outline"
+																	size="sm"
+																	onClick={() =>
+																		startEditPlace(
+																			place,
+																		)
+																	}
+																>
+																	<Edit className="w-4 h-4" />
+																</Button>
+																<Button
+																	variant="outline"
+																	size="sm"
+																	onClick={() =>
+																		openDeleteModal(
+																			place,
+																		)
+																	}
+																>
+																	<Trash2 className="w-4 h-4" />
+																</Button>
+															</div>
+														</div>
+
+														{/* Categories and Tags */}
+														<div className="mt-3 space-y-2">
+															{place
+																.travelCategories
+																.length > 0 && (
+																<div className="flex flex-wrap gap-1">
+																	{place.travelCategories
+																		.slice(
+																			0,
+																			3,
+																		)
+																		.map(
+																			(
+																				categoryId,
+																			) => (
+																				<Badge
+																					key={
+																						categoryId
+																					}
+																					variant="secondary"
+																					className="text-xs"
+																				>
+																					{travelCategoriesOptions.find(
+																						(
+																							opt,
+																						) =>
+																							opt.value ===
+																							categoryId,
+																					)
+																						?.label ||
+																						categoryId}
+																				</Badge>
+																			),
+																		)}
+																	{place
+																		.travelCategories
+																		.length >
+																		3 && (
+																		<Badge
+																			variant="outline"
+																			className="text-xs"
+																		>
+																			+
+																			{place
+																				.travelCategories
+																				.length -
+																				3}{" "}
+																			more
+																		</Badge>
+																	)}
+																</div>
+															)}
+
+															{place.travelTags
+																.length > 0 && (
+																<div className="flex flex-wrap gap-1">
+																	{place.travelTags
+																		.slice(
+																			0,
+																			4,
+																		)
+																		.map(
+																			(
+																				tagId,
+																			) => (
+																				<Badge
+																					key={
+																						tagId
+																					}
+																					variant="outline"
+																					className="text-xs"
+																				>
+																					{travelTagsOptions.find(
+																						(
+																							opt,
+																						) =>
+																							opt.value ===
+																							tagId,
+																					)
+																						?.label ||
+																						tagId}
+																				</Badge>
+																			),
+																		)}
+																	{place
+																		.travelTags
+																		.length >
+																		4 && (
+																		<Badge
+																			variant="outline"
+																			className="text-xs"
+																		>
+																			Load
+																			{place
+																				.travelTags
+																				.length -
+																				4}{" "}
+																			more
+																		</Badge>
+																	)}
+																</div>
+															)}
+														</div>
+													</div>
+												</div>
+											)}
+										</div>
+									))}
+								</div>
+
+								{placesHasMore && (
+									<div className="flex justify-center mt-6">
+										<Button
+											onClick={() => loadPlaces(false)}
+											disabled={placesLoadingMore}
+											variant="outline"
+										>
+											{placesLoadingMore ? (
+												<>
+													<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+													Loading...
+												</>
+											) : (
+												`Load More (${places.length} of ${placesTotalCount})`
+											)}
+										</Button>
+									</div>
+								)}
+							</>
+						)}
+					</CardContent>
+				</Card>
+			</div>
+
+			<ConfirmationModal
+				isOpen={deleteModal.isOpen}
+				onClose={closeDeleteModal}
+				onConfirm={handleDeletePlace}
+				title="Delete Place"
+				description="Are you sure you want to delete this place? This will permanently remove the place and all associated data including reviews, ratings, and user interactions."
+				itemName={deleteModal.placeName}
+				itemType="place"
+				isLoading={deleteModal.isLoading}
+				variant="destructive"
+			/>
+		</div>
+	);
+};
+
+export default AdminPlacesPage;

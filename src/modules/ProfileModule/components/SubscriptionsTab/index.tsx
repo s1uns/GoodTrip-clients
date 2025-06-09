@@ -30,6 +30,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTranslation } from "react-i18next";
 
 const ITEMS_PER_PAGE = 3;
 
@@ -178,6 +179,8 @@ const allSubscriptions = [
 ];
 
 export default function SubscriptionsTab() {
+	const { t } = useTranslation();
+
 	const [subscribers, setSubscribers] = useState<Subscription[]>([]);
 	const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
 	const [subscribersPage, setSubscribersPage] = useState(1);
@@ -311,10 +314,10 @@ export default function SubscriptionsTab() {
 			>
 				<TabsList className="mb-4">
 					<TabsTrigger value="subscriptions">
-						My Subscriptions
+						{t("tabs.my_subscriptions")}
 					</TabsTrigger>
 					<TabsTrigger value="subscribers">
-						My Subscribers
+						{t("tabs.my_subscribers")}
 					</TabsTrigger>
 				</TabsList>
 
@@ -323,10 +326,10 @@ export default function SubscriptionsTab() {
 						<CardHeader className="flex flex-row items-center justify-between">
 							<div>
 								<CardTitle className="text-lg">
-									My Subscriptions
+									{t("subscriptionsTab.title")}
 								</CardTitle>
 								<CardDescription>
-									Users you are subscribed to
+									{t("subscriptionsTab.description")}
 								</CardDescription>
 							</div>
 							<Badge variant="secondary" className="ml-2">
@@ -340,7 +343,9 @@ export default function SubscriptionsTab() {
 								<div className="flex-1 relative">
 									<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
 									<Input
-										placeholder="Search subscriptions..."
+										placeholder={t(
+											"subscriptionsTab.search_placeholder",
+										)}
 										value={subscriptionsSearch}
 										onChange={(e) =>
 											setSubscriptionsSearch(
@@ -367,26 +372,42 @@ export default function SubscriptionsTab() {
 									onValueChange={setSubscriptionsSort}
 								>
 									<SelectTrigger className="w-full md:w-[180px]">
-										<SelectValue placeholder="Sort by" />
+										<SelectValue
+											placeholder={t(
+												"subscriptionsTab.sort_by_placeholder",
+											)}
+										/>
 									</SelectTrigger>
 									<SelectContent>
 										<SelectItem value="name-asc">
-											Name (A-Z)
+											{t(
+												"subscriptionsTab.sort_name_asc",
+											)}
 										</SelectItem>
 										<SelectItem value="name-desc">
-											Name (Z-A)
+											{t(
+												"subscriptionsTab.sort_name_desc",
+											)}
 										</SelectItem>
 										<SelectItem value="subscribers-asc">
-											Subscribers (Low-High)
+											{t(
+												"subscriptionsTab.sort_subscribers_asc",
+											)}
 										</SelectItem>
 										<SelectItem value="subscribers-desc">
-											Subscribers (High-Low)
+											{t(
+												"subscriptionsTab.sort_subscribers_desc",
+											)}
 										</SelectItem>
 										<SelectItem value="rating-asc">
-											Rating (Low-High)
+											{t(
+												"subscriptionsTab.sort_rating_asc",
+											)}
 										</SelectItem>
 										<SelectItem value="rating-desc">
-											Rating (High-Low)
+											{t(
+												"subscriptionsTab.sort_rating_desc",
+											)}
 										</SelectItem>
 									</SelectContent>
 								</Select>
@@ -397,12 +418,18 @@ export default function SubscriptionsTab() {
 								<div className="text-center py-8">
 									<UserPlus className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
 									<p className="mt-2 text-lg font-medium">
-										No subscriptions found
+										{t(
+											"subscriptionsTab.no_subscriptions_found",
+										)}
 									</p>
 									<p className="text-sm text-muted-foreground">
 										{subscriptionsSearch
-											? "Try a different search term"
-											: "You haven't subscribed to anyone yet"}
+											? t(
+													"subscriptionsTab.try_different_search",
+											  )
+											: t(
+													"subscriptionsTab.no_subscriptions_yet",
+											  )}
 									</p>
 								</div>
 							) : (
@@ -441,7 +468,9 @@ export default function SubscriptionsTab() {
 												size="sm"
 												className="text-xs"
 											>
-												Unsubscribe
+												{t(
+													"subscriptionsTab.unsubscribe_button",
+												)}
 											</Button>
 										</div>
 									))}
@@ -461,10 +490,10 @@ export default function SubscriptionsTab() {
 									{loadingSubscriptions ? (
 										<>
 											<Loader2 className="mr-2 h-3 w-3 animate-spin" />
-											Loading...
+											{t("subscriptionsTab.loading")}
 										</>
 									) : (
-										"Load More"
+										t("subscriptionsTab.load_more_button")
 									)}
 								</Button>
 							)}
@@ -477,10 +506,10 @@ export default function SubscriptionsTab() {
 						<CardHeader className="flex flex-row items-center justify-between">
 							<div>
 								<CardTitle className="text-lg">
-									My Subscribers
+									{t("subscribers.title")}
 								</CardTitle>
 								<CardDescription>
-									Users who are subscribed to you
+									{t("subscribers.description")}
 								</CardDescription>
 							</div>
 							<Badge variant="secondary" className="ml-2">
@@ -494,7 +523,9 @@ export default function SubscriptionsTab() {
 								<div className="flex-1 relative">
 									<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
 									<Input
-										placeholder="Search subscribers..."
+										placeholder={t(
+											"subscribers.search_placeholder",
+										)}
 										value={subscribersSearch}
 										onChange={(e) =>
 											setSubscribersSearch(e.target.value)
@@ -519,26 +550,34 @@ export default function SubscriptionsTab() {
 									onValueChange={setSubscribersSort}
 								>
 									<SelectTrigger className="w-full md:w-[180px]">
-										<SelectValue placeholder="Sort by" />
+										<SelectValue
+											placeholder={t(
+												"subscribers.sort_by_placeholder",
+											)}
+										/>
 									</SelectTrigger>
 									<SelectContent>
 										<SelectItem value="name-asc">
-											Name (A-Z)
+											{t("subscribers.sort_name_asc")}
 										</SelectItem>
 										<SelectItem value="name-desc">
-											Name (Z-A)
+											{t("subscribers.sort_name_desc")}
 										</SelectItem>
 										<SelectItem value="subscribers-asc">
-											Subscribers (Low-High)
+											{t(
+												"subscribers.sort_subscribers_asc",
+											)}
 										</SelectItem>
 										<SelectItem value="subscribers-desc">
-											Subscribers (High-Low)
+											{t(
+												"subscribers.sort_subscribers_desc",
+											)}
 										</SelectItem>
 										<SelectItem value="rating-asc">
-											Rating (Low-High)
+											{t("subscribers.sort_rating_asc")}
 										</SelectItem>
 										<SelectItem value="rating-desc">
-											Rating (High-Low)
+											{t("subscribers.sort_rating_desc")}
 										</SelectItem>
 									</SelectContent>
 								</Select>
@@ -548,12 +587,16 @@ export default function SubscriptionsTab() {
 								<div className="text-center py-8">
 									<Users className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
 									<p className="mt-2 text-lg font-medium">
-										No subscribers found
+										{t("subscribers.no_subscribers_found")}
 									</p>
 									<p className="text-sm text-muted-foreground">
 										{subscribersSearch
-											? "Try a different search term"
-											: "You don't have any subscribers yet"}
+											? t(
+													"subscribers.try_different_search",
+											  )
+											: t(
+													"subscribers.no_subscribers_yet",
+											  )}
 									</p>
 								</div>
 							) : (
@@ -592,7 +635,9 @@ export default function SubscriptionsTab() {
 												size="sm"
 												className="text-xs"
 											>
-												View Profile
+												{t(
+													"subscribers.view_profile_button",
+												)}
 											</Button>
 										</div>
 									))}
@@ -612,10 +657,10 @@ export default function SubscriptionsTab() {
 									{loadingSubscribers ? (
 										<>
 											<Loader2 className="mr-2 h-3 w-3 animate-spin" />
-											Loading...
+											{t("subscribers.loading")}
 										</>
 									) : (
-										"Load More"
+										t("subscribers.load_more_button")
 									)}
 								</Button>
 							)}

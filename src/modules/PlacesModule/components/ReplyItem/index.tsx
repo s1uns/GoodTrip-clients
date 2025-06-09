@@ -12,6 +12,8 @@ import { Reply } from "@/shared/types/Reply";
 import { ENTITY_REPLY } from "@/shared/constants/place";
 import emptyPic from "@/assets/emptyPic.png";
 import { convertDateToDDMonYYYY } from "@/shared/utils/helpers/convertDateToDDMonYYYY";
+import i18n from "@/config/i18n";
+import { useTranslation } from "react-i18next";
 
 interface ReplyItemProps {
 	reply: Reply;
@@ -39,7 +41,7 @@ const ReplyItem = memo<ReplyItemProps>(
 		openReportDialog,
 		handleReply,
 	}) => {
-		
+		const { i18n } = useTranslation();
 		return (
 			<div className="flex items-start gap-3">
 				<div className="flex-1">
@@ -49,7 +51,7 @@ const ReplyItem = memo<ReplyItemProps>(
 								{reply.username}
 							</p>
 							<span className="text-xs text-muted-foreground">
-								{convertDateToDDMonYYYY(reply.date)}
+								{convertDateToDDMonYYYY(reply.date, i18n.language)}
 							</span>
 						</div>
 						<DropdownMenu modal={false}>

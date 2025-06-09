@@ -1,26 +1,19 @@
-export const convertDateToDDMonYYYY = (dateString: string) => {
+const localeMapper: Record<string, string> = {
+	en: "en-US",
+	ua: "uk-UA",
+	de: "de-DE",
+};
+
+export const convertDateToDDMonYYYY = (dateString: string, locale: string) => {
 	const date = new Date(dateString);
 
-	const months = [
-		"Jan",
-		"Feb",
-		"Mar",
-		"Apr",
-		"May",
-		"Jun",
-		"Jul",
-		"Aug",
-		"Sep",
-		"Oct",
-		"Nov",
-		"Dec",
-	];
+	const selectedLocale = localeMapper[locale] || "en-US";
 
-	const day = date.getDate();
-	const month = months[date.getMonth()];
-	const year = date.getFullYear(); 
+	const formatter = new Intl.DateTimeFormat(selectedLocale, {
+		day: "2-digit",
+		month: "short",
+		year: "numeric",
+	});
 
-	const formattedDay = day < 10 ? "0" + day : day;
-
-	return `${formattedDay} ${month} ${year}`;
+	return formatter.format(date);
 };

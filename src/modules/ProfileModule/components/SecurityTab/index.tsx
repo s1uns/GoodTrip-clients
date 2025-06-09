@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface ValidationErrors {
 	currentPassword?: string;
@@ -33,6 +34,8 @@ interface ValidationErrors {
 }
 
 export default function SecurityTab() {
+	const { t } = useTranslation();
+
 	const [currentPassword, setCurrentPassword] = useState("");
 	const [password, setPassword] = useState("");
 	const [passwordConfirmation, setPasswordConfirmation] = useState("");
@@ -48,19 +51,19 @@ export default function SecurityTab() {
 		const errors: string[] = [];
 
 		if (pwd.length < 8) {
-			errors.push("password must contain 8 or more characters");
+			errors.push(t("passwordValidation.length"));
 		}
 
 		if (!/[a-z]/.test(pwd)) {
-			errors.push("password must contain at least 1 lower case letter");
+			errors.push(t("passwordValidation.lowerCase"));
 		}
 
 		if (!/[A-Z]/.test(pwd)) {
-			errors.push("password must contain at least 1 upper case letter");
+			errors.push(t("passwordValidation.upperCase"));
 		}
 
 		if (!/\d/.test(pwd)) {
-			errors.push("password must contain at least 1 number");
+			errors.push(t("passwordValidation.number"));
 		}
 
 		return errors;
@@ -68,19 +71,19 @@ export default function SecurityTab() {
 
 	const passwordRules = [
 		{
-			text: "At least 8 characters",
+			text: t("passwordRules.minChars"),
 			isValid: (pwd: string) => pwd.length >= 8,
 		},
 		{
-			text: "At least 1 lowercase letter",
+			text: t("passwordRules.lowerCase"),
 			isValid: (pwd: string) => /[a-z]/.test(pwd),
 		},
 		{
-			text: "At least 1 uppercase letter",
+			text: t("passwordRules.upperCase"),
 			isValid: (pwd: string) => /[A-Z]/.test(pwd),
 		},
 		{
-			text: "At least 1 number",
+			text: t("passwordRules.number"),
 			isValid: (pwd: string) => /\d/.test(pwd),
 		},
 	];
@@ -89,11 +92,11 @@ export default function SecurityTab() {
 		const newErrors: ValidationErrors = {};
 
 		if (!currentPassword.trim()) {
-			newErrors.currentPassword = "Current password is required";
+			newErrors.currentPassword = t("errors.currentPasswordRequired");
 		}
 
 		if (!password.trim()) {
-			newErrors.password = "The password is required";
+			newErrors.password = t("errors.passwordRequired");
 		} else {
 			const passwordErrors = validatePassword(password);
 			if (passwordErrors.length > 0) {
@@ -102,9 +105,11 @@ export default function SecurityTab() {
 		}
 
 		if (!passwordConfirmation.trim()) {
-			newErrors.passwordConfirmation = "Confirm your password!";
+			newErrors.passwordConfirmation = t(
+				"errors.confirmPasswordRequired",
+			);
 		} else if (password !== passwordConfirmation) {
-			newErrors.passwordConfirmation = "Passwords mismatch.";
+			newErrors.passwordConfirmation = t("errors.passwordsMismatch");
 		}
 
 		setErrors(newErrors);
@@ -128,9 +133,9 @@ export default function SecurityTab() {
 			setPasswordConfirmation("");
 			setErrors({});
 
-			toast.success("Password changed successfully!");
+			toast.success(t("toast.passwordChangedSuccess"));
 		} catch (error) {
-			toast.error("Failed to change password. Please try again.");
+			toast.error(t("toast.passwordChangeFailed"));
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -158,6 +163,14 @@ export default function SecurityTab() {
 		}
 	};
 
+	const getPasswordStrengthText = () => {
+		if (!password) return "";
+		const passwordErrors = validatePassword(password);
+		if (passwordErrors.length === 0) return t("passwordStrength.strong");
+		if (passwordErrors.length <= 2) return t("passwordStrength.medium");
+		return t("passwordStrength.weak");
+	};
+
 	const getPasswordStrengthColor = () => {
 		if (!password) return "#808080";
 		const passwordErrors = validatePassword(password);
@@ -179,15 +192,17 @@ export default function SecurityTab() {
 			<CardHeader>
 				<CardTitle className="flex items-center">
 					<Lock className="w-5 h-5 mr-2" />
-					Security Settings
+					{t("securitySettings.title")}
 				</CardTitle>
-				<CardDescription>Manage your account security</CardDescription>
+				<CardDescription>
+					{t("securitySettings.description")}
+				</CardDescription>
 			</CardHeader>
 			<CardContent>
 				<form onSubmit={handleSubmit} className="space-y-4">
 					<div className="space-y-2">
 						<Label htmlFor="currentPassword">
-							Current Password
+							{t("fields.currentPassword")}
 						</Label>
 						<div className="relative">
 							<Input
@@ -197,7 +212,9 @@ export default function SecurityTab() {
 								onChange={(e) =>
 									setCurrentPassword(e.target.value)
 								}
-								placeholder="Enter your current password"
+								placeholder={t(
+									"placeholders.enterCurrentPassword",
+								)}
 								className={cn(
 									"pr-12",
 									errors.currentPassword
@@ -240,7 +257,9 @@ export default function SecurityTab() {
 					</div>
 
 					<div className="space-y-2">
-						<Label htmlFor="password">New Password</Label>
+						<Label htmlFor="password">
+							{t("fields.newPassword")}
+						</Label>
 						<div className="relative">
 							<Input
 								id="password"
@@ -249,7 +268,7 @@ export default function SecurityTab() {
 								onChange={(e) =>
 									handlePasswordChange(e.target.value)
 								}
-								placeholder="Enter your new password"
+								placeholder={t("placeholders.enterNewPassword")}
 								className={cn(
 									"pr-12",
 									errors.password ? "border-red-500" : "",
@@ -295,12 +314,7 @@ export default function SecurityTab() {
 										/>
 									</div>
 									<span className="text-sm font-medium min-w-[60px]">
-										{validatePassword(password).length === 0
-											? "Strong"
-											: validatePassword(password)
-													.length <= 2
-											? "Medium"
-											: "Weak"}
+										{getPasswordStrengthText()}
 									</span>
 								</div>
 							</div>
@@ -316,7 +330,7 @@ export default function SecurityTab() {
 
 					<div className="bg-muted/50 rounded-md p-3 space-y-2 pt-0">
 						<p className="text-sm font-medium text-muted-foreground">
-							Password must contain:
+							{t("passwordRules.header")}
 						</p>
 						<div className="space-y-1">
 							{passwordRules.map((rule, index) => {
@@ -351,7 +365,7 @@ export default function SecurityTab() {
 
 					<div className="space-y-2">
 						<Label htmlFor="passwordConfirmation">
-							Confirm New Password
+							{t("fields.confirmNewPassword")}
 						</Label>
 						<div className="relative">
 							<Input
@@ -367,7 +381,9 @@ export default function SecurityTab() {
 										e.target.value,
 									)
 								}
-								placeholder="Confirm your new password"
+								placeholder={t(
+									"placeholders.confirmNewPassword",
+								)}
 								className={cn(
 									"pr-12",
 									errors.passwordConfirmation
@@ -408,7 +424,7 @@ export default function SecurityTab() {
 							!errors.passwordConfirmation && (
 								<p className="text-sm text-green-500 flex items-center gap-1">
 									<CheckCircle className="w-4 h-4" />
-									Passwords match
+									{t("validationStatus.passwordsMatch")}
 								</p>
 							)}
 
@@ -428,12 +444,12 @@ export default function SecurityTab() {
 						{isSubmitting ? (
 							<>
 								<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-								Changing Password...
+								{t("buttons.changingPassword")}
 							</>
 						) : (
 							<>
 								<Lock className="w-4 h-4 mr-2" />
-								Change Password
+								{t("buttons.changePassword")}
 							</>
 						)}
 					</Button>

@@ -19,6 +19,10 @@ export const ADMIN_NAVIGATION_OPTIONS: NavOption[] = [
 		route: "preferences",
 	},
 	{
+		title: "Places",
+		route: "places",
+	},
+	{
 		title: "Reports",
 		route: "reports",
 	},

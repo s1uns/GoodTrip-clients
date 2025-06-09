@@ -147,7 +147,7 @@ const ReviewForm = ({
 							: t("reviewForm.submitReview")}
 					</Button>
 					<Button variant="outline" onClick={onCancel}>
-						{t("reviewForm.cancel")}
+						{t("common.cancel")}
 					</Button>
 				</div>
 			</CardContent>

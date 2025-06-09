@@ -4,6 +4,7 @@ import {
 	PreferencesPage,
 	ReportsPage,
 	UsersPage,
+	AdminPlacesPage,
 } from "@/modules/AdministrationModule/pages";
 
 const AdminRoot = () => {
@@ -16,6 +17,7 @@ const AdminRoot = () => {
 			<Route path={ROUTES.USERS} element={<UsersPage />} />
 			<Route path={ROUTES.PREFERENCES} element={<PreferencesPage />} />
 			<Route path={ROUTES.REPORTS} element={<ReportsPage />} />
+			<Route path={ROUTES.PLACES} element={<AdminPlacesPage />} />
 
 			<Route
 				path="*"

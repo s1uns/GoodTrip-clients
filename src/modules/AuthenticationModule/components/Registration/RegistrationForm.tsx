@@ -4,12 +4,14 @@ import { Field, Form, Formik } from "formik";
 import { Link } from "react-router-dom";
 import { Button, Typography } from "@mui/material";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import LanguageChangerButton from "../../../../shared/components/LanguageChanger";
 import { RegistrationCredentials } from "../../../../shared/types/auth";
 import { useUserStore } from "../../../../store/userStore";
 import Input from "../../../../shared/components/Input";
 import { getUserRegistrationSchema } from "../../../../shared/utils/validators";
+import RegistrationConfirmationModal from "./RegistrationConfirmationModal";
 
 const initialValues: RegistrationCredentials = {
 	email: "",
@@ -23,13 +25,29 @@ const initialValues: RegistrationCredentials = {
 const RegistrationForm = () => {
 	const [serverErrors, setServerErrors] = useState<string | null>(null);
 	const register = useUserStore((state) => state.register);
+	const [currentCredentials, setCurrentCredentials] =
+		useState<RegistrationCredentials | null>(null);
+
 	const { t } = useTranslation();
 	const validationSchema = getUserRegistrationSchema(t);
 
+	const navigate = useNavigate();
+
+	const handleConfirmCode = async (code: string) => {
+		if (code === "123456" && currentCredentials) {
+			await register(currentCredentials);
+			navigate("/login");
+		} else {
+			throw new Error("Wrong code, try again");
+		}
+	};
+
 	const handleRegister = async (values: RegistrationCredentials) => {
 		values.setErrors = setServerErrors;
-		await register(values);
+		setCurrentCredentials(values);
 	};
+
+	const handleCloseConfirmationModal = () => setCurrentCredentials(null);
 
 	return (
 		<FormWrapper>
@@ -120,6 +138,14 @@ const RegistrationForm = () => {
 					</StyledLink>
 				</BottomBlock>
 			</FormContainer>
+
+			{currentCredentials ? (
+				<RegistrationConfirmationModal
+					open={Boolean(currentCredentials)}
+					onClose={handleCloseConfirmationModal}
+					onConfirm={handleConfirmCode}
+				/>
+			) : null}
 		</FormWrapper>
 	);
 };

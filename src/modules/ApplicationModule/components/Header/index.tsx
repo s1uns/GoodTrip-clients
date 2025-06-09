@@ -63,7 +63,7 @@ const Header = () => {
 						navigateToRoute={navigateToRoute}
 					/>
 				))}
-				<LanguageChangerButton />
+				<LanguageChangerButton isAuthenticated />
 				<LogoutButton onClick={logout}>
 					{t("logout")}
 					<LogoutIcon />
@@ -95,7 +95,7 @@ const Header = () => {
 							}}
 						/>
 					))}
-					<LanguageChangerButton />
+					<LanguageChangerButton isAuthenticated />
 					<LogoutButton onClick={logout}>
 						{t("logout")}
 						<LogoutIcon />

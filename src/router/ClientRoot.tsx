@@ -24,6 +24,7 @@ const ClientRoot = () => {
 
 			<Route path={ROUTES.PLACES} element={<PlacesPage />} />
 			<Route path={`${ROUTES.PLACES}/:placeId`} element={<PlacePage />} />
+
 			<Route
 				path="*"
 				element={<Navigate to={ROUTES.PROFILE} replace />}

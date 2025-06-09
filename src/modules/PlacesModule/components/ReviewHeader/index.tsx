@@ -4,6 +4,7 @@ import { Edit, Trash2, Flag } from "lucide-react";
 import Stars from "../Stars";
 import { ENTITY_REVIEW } from "@/shared/constants/place";
 import { convertDateToDDMonYYYY } from "@/shared/utils/helpers/convertDateToDDMonYYYY";
+import { useTranslation } from "react-i18next";
 
 interface ReviewHeaderProps {
 	id: string;
@@ -33,6 +34,7 @@ const ReviewHeader = memo<ReviewHeaderProps>(
 			() => deleteReview(id),
 			[id, deleteReview],
 		);
+		const { i18n } = useTranslation();
 
 		return (
 			<div className="flex items-start justify-between mb-3">
@@ -42,7 +44,7 @@ const ReviewHeader = memo<ReviewHeaderProps>(
 						<div className="flex items-center gap-2">
 							<Stars rating={rating} />
 							<span className="text-sm text-muted-foreground">
-								{convertDateToDDMonYYYY(date)}
+								{convertDateToDDMonYYYY(date, i18n.language)}
 							</span>
 						</div>
 					</div>

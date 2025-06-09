@@ -22,6 +22,9 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Link } from "react-router-dom";
+import { ROUTES } from "@/shared/constants/routes";
+import { useTranslation } from "react-i18next"; // Import useTranslation
 
 const userPreferences = {
 	travelTags: [
@@ -91,13 +94,11 @@ const travelCategoriesOptions = [
 
 const distanceOptions = [
 	{ label: "None", value: "none" },
-	{ label: "Within 10 km", value: "10" },
-	{ label: "Within 25 km", value: "25" },
-	{ label: "Within 50 km", value: "50" },
-	{ label: "Within 100 km", value: "100" },
-	{ label: "Within 250 km", value: "250" },
-	{ label: "Within 500 km", value: "500" },
-	{ label: "Within 1000 km", value: "1000" },
+	{ label: "Within 10 km", value: "100" },
+	{ label: "Within 25 km", value: "250" },
+	{ label: "Within 50 km", value: "500" },
+	{ label: "Within 100 km", value: "1000" },
+	{ label: "Within 250 km", value: "2500" },
 ];
 
 const calculateDistance = (
@@ -120,6 +121,7 @@ const calculateDistance = (
 };
 
 export default function RecommendationsPage() {
+	const { t } = useTranslation(); // Initialize useTranslation
 	const [searchName, setSearchName] = useState("");
 	const [searchCity, setSearchCity] = useState("");
 	const [selectedTravelTags, setSelectedTravelTags] = useState<string[]>([]);
@@ -271,7 +273,9 @@ export default function RecommendationsPage() {
 	return (
 		<div className="container mx-auto px-4 py-8">
 			<div className="flex justify-between items-center mb-6">
-				<h1 className="text-3xl font-bold">Recommended Places</h1>
+				<h1 className="text-3xl font-bold">
+					{t("recommendationsPage.title")}
+				</h1>
 				{activeFiltersCount > 0 && (
 					<Button
 						variant="outline"
@@ -279,7 +283,9 @@ export default function RecommendationsPage() {
 						className="flex items-center gap-2"
 					>
 						<X className="h-4 w-4" />
-						Clear Filters ({activeFiltersCount})
+						{t("recommendationsPage.clearFiltersButton", {
+							count: activeFiltersCount,
+						})}
 					</Button>
 				)}
 			</div>
@@ -288,20 +294,22 @@ export default function RecommendationsPage() {
 				<CardHeader>
 					<CardTitle className="flex items-center gap-2">
 						<Filter className="h-5 w-5" />
-						Filters & Search
+						{t("recommendationsPage.filtersAndSearchTitle")}
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="space-y-6">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div className="space-y-2">
 							<Label htmlFor="search-name">
-								Search by Place Name
+								{t("recommendationsPage.searchByNameLabel")}
 							</Label>
 							<div className="relative">
 								<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
 								<Input
 									id="search-name"
-									placeholder="Search places..."
+									placeholder={t(
+										"recommendationsPage.searchPlacesPlaceholder",
+									)}
 									value={searchName}
 									onChange={(e) =>
 										setSearchName(e.target.value)
@@ -312,7 +320,9 @@ export default function RecommendationsPage() {
 						</div>
 
 						<div className="space-y-2">
-							<Label htmlFor="search-city">Search by City</Label>
+							<Label htmlFor="search-city">
+								{t("recommendationsPage.searchByCityLabel")}
+							</Label>
 							<div className="relative">
 								<MapPin className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
 								<TooltipProvider>
@@ -321,7 +331,9 @@ export default function RecommendationsPage() {
 											<div className="w-full">
 												<Input
 													id="search-city"
-													placeholder="Search cities..."
+													placeholder={t(
+														"recommendationsPage.searchCitiesPlaceholder",
+													)}
 													value={searchCity}
 													onChange={(e) =>
 														setSearchCity(
@@ -336,8 +348,9 @@ export default function RecommendationsPage() {
 										{useMyLocation && (
 											<TooltipContent>
 												<p>
-													Uncheck "Use my location" to
-													enter a city manually
+													{t(
+														"recommendationsPage.uncheckLocationTooltip",
+													)}
 												</p>
 											</TooltipContent>
 										)}
@@ -371,8 +384,9 @@ export default function RecommendationsPage() {
 										{searchCity && (
 											<TooltipContent>
 												<p>
-													Clear the city field to use
-													your location
+													{t(
+														"recommendationsPage.clearCityFieldTooltip",
+													)}
 												</p>
 											</TooltipContent>
 										)}
@@ -382,7 +396,9 @@ export default function RecommendationsPage() {
 									htmlFor="use-my-location"
 									className="text-base"
 								>
-									Use my location
+									{t(
+										"recommendationsPage.useMyLocationLabel",
+									)}
 								</Label>
 								{useMyLocation && (
 									<span className="text-sm text-muted-foreground">
@@ -403,7 +419,9 @@ export default function RecommendationsPage() {
 									htmlFor="show-favorites"
 									className="text-base"
 								>
-									Show only favorites
+									{t(
+										"recommendationsPage.showOnlyFavoritesLabel",
+									)}
 								</Label>
 							</div>
 						</div>
@@ -414,7 +432,9 @@ export default function RecommendationsPage() {
 									htmlFor="distance"
 									className="flex items-center gap-1"
 								>
-									Distance Filter
+									{t(
+										"recommendationsPage.distanceFilterLabel",
+									)}
 									{isDistanceFilterDisabled && (
 										<TooltipProvider>
 											<Tooltip>
@@ -423,9 +443,9 @@ export default function RecommendationsPage() {
 												</TooltipTrigger>
 												<TooltipContent>
 													<p>
-														Enter a city or use your
-														location to enable
-														distance filtering
+														{t(
+															"recommendationsPage.enableDistanceFilterTooltip",
+														)}
 													</p>
 												</TooltipContent>
 											</Tooltip>
@@ -439,7 +459,11 @@ export default function RecommendationsPage() {
 								disabled={isDistanceFilterDisabled}
 							>
 								<SelectTrigger id="distance">
-									<SelectValue placeholder="Select distance" />
+									<SelectValue
+										placeholder={t(
+											"recommendationsPage.selectDistancePlaceholder",
+										)}
+									/>
 								</SelectTrigger>
 								<SelectContent>
 									{distanceOptions.map((option) => (
@@ -447,14 +471,18 @@ export default function RecommendationsPage() {
 											key={option.value}
 											value={option.value}
 										>
-											{option.label}
+											{t(
+												`recommendationsPage.distanceOption.${option.value}`,
+											)}
 										</SelectItem>
 									))}
 								</SelectContent>
 							</Select>
 							{isDistanceFilterDisabled && (
 								<p className="text-xs text-muted-foreground">
-									Enter a city or use your location to enable
+									{t(
+										"recommendationsPage.enableDistanceFilterMessage",
+									)}
 								</p>
 							)}
 						</div>
@@ -466,11 +494,14 @@ export default function RecommendationsPage() {
 								htmlFor="use-profile-preferences"
 								className="text-base font-medium"
 							>
-								Use My Profile Preferences
+								{t(
+									"recommendationsPage.useProfilePreferencesTitle",
+								)}
 							</Label>
 							<p className="text-sm text-muted-foreground">
-								Automatically fill filters with your saved
-								travel preferences
+								{t(
+									"recommendationsPage.useProfilePreferencesDescription",
+								)}
 							</p>
 						</div>
 						<Switch
@@ -482,42 +513,70 @@ export default function RecommendationsPage() {
 
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div className="space-y-2">
-							<Label htmlFor="travel-tags">Travel Tags</Label>
+							<Label htmlFor="travel-tags">
+								{t("recommendationsPage.travelTagsLabel")}
+							</Label>
 							<MultiSelect
-								options={travelTagsOptions}
+								options={travelTagsOptions.map((option) => ({
+									label: option.label,
+									value: option.value,
+								}))}
 								selected={selectedTravelTags}
 								onChange={setSelectedTravelTags}
-								placeholder="Select travel tags..."
+								placeholder={t(
+									"recommendationsPage.selectTravelTagsPlaceholder",
+								)}
 								disabled={useProfilePreferences}
 							/>
 						</div>
 
 						<div className="space-y-2">
 							<Label htmlFor="travel-categories">
-								Travel Categories
+								{t("recommendationsPage.travelCategoriesLabel")}
 							</Label>
 							<MultiSelect
-								options={travelCategoriesOptions}
+								options={travelCategoriesOptions.map(
+									(option) => ({
+										label: option.label,
+										value: option.value,
+									}),
+								)}
 								selected={selectedTravelCategories}
 								onChange={setSelectedTravelCategories}
-								placeholder="Select travel categories..."
+								placeholder={t(
+									"recommendationsPage.selectTravelCategoriesPlaceholder",
+								)}
 								disabled={useProfilePreferences}
 							/>
 						</div>
 					</div>
 
 					<div className="space-y-2">
-						<Label htmlFor="sort-by">Sort by</Label>
+						<Label htmlFor="sort-by">
+							{t("recommendationsPage.sortByLabel")}
+						</Label>
 						<Select value={sort} onValueChange={setSort}>
 							<SelectTrigger id="sort-by" className="md:w-48">
-								<SelectValue placeholder="Sort by" />
+								<SelectValue
+									placeholder={t(
+										"recommendationsPage.sortByPlaceholder",
+									)}
+								/>
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="rating">Rating</SelectItem>
-								<SelectItem value="name">Name</SelectItem>
+								<SelectItem value="rating">
+									{t(
+										"recommendationsPage.sortByOptionRating",
+									)}
+								</SelectItem>
+								<SelectItem value="name">
+									{t("recommendationsPage.sortByOptionName")}
+								</SelectItem>
 								{distance !== "none" && (
 									<SelectItem value="distance">
-										Distance
+										{t(
+											"recommendationsPage.sortByOptionDistance",
+										)}
 									</SelectItem>
 								)}
 							</SelectContent>
@@ -528,108 +587,128 @@ export default function RecommendationsPage() {
 
 			<div className="mb-4">
 				<p className="text-muted-foreground">
-					Showing {filteredAndSortedPlaces.length} of {places.length}{" "}
-					places
+					{t("recommendationsPage.showingPlaces", {
+						filteredCount: filteredAndSortedPlaces.length,
+						totalCount: places.length,
+					})}
 				</p>
 			</div>
 
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 				{filteredAndSortedPlaces.map((place) => (
-					<Card
-						key={place.id}
-						className="hover:shadow-lg transition-shadow"
-					>
-						<CardHeader className="p-0 relative">
-							<img
-								src={place.image || "/placeholder.svg"}
-								alt={place.name}
-								className="w-full h-48 object-cover rounded-t-lg"
-							/>
-							<div
-								className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md cursor-pointer hover:bg-gray-50 transition-colors"
-								onClick={(e) => {
-									e.stopPropagation();
-									e.preventDefault();
-									toggleFavorite(place.id);
-								}}
-							>
-								<Heart
-									className={`w-4 h-4 ${
-										favoriteIds.includes(place.id)
-											? "text-red-500 fill-current"
-											: "text-gray-400"
-									}`}
+					<Link to={`${ROUTES.PLACES}/${place.id}`} key={place.id}>
+						<Card className="hover:shadow-lg transition-shadow">
+							<CardHeader className="p-0 relative">
+								<img
+									src={place.image || "/placeholder.svg"}
+									alt={place.name}
+									className="w-full h-48 object-cover rounded-t-lg"
 								/>
-							</div>
-						</CardHeader>
-						<CardContent className="p-4">
-							<CardTitle className="text-xl mb-2">
-								{place.name}
-							</CardTitle>
-							<div className="flex items-center mb-2 text-muted-foreground">
-								<MapPin className="w-4 h-4 mr-1" />
-								<span className="text-sm">{place.city}</span>
-							</div>
-							<div className="flex items-center mb-3">
-								<Star className="w-5 h-5 text-yellow-400 fill-current" />
-								<span className="ml-1 font-semibold">
-									{place.rating.toFixed(1)}
-								</span>
-								{distance !== "none" && userCoordinates && (
-									<span className="ml-auto text-sm text-muted-foreground">
-										{calculateDistance(
-											userCoordinates.lat,
-											userCoordinates.lng,
-											place.coordinates.lat,
-											place.coordinates.lng,
-										).toFixed(1)}{" "}
-										km
+								<div
+									className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md cursor-pointer hover:bg-gray-50 transition-colors"
+									onClick={(e) => {
+										e.stopPropagation();
+										e.preventDefault();
+										toggleFavorite(place.id);
+									}}
+								>
+									<Heart
+										className={`w-4 h-4 ${
+											favoriteIds.includes(place.id)
+												? "text-red-500 fill-current"
+												: "text-gray-400"
+										}`}
+									/>
+								</div>
+							</CardHeader>
+							<CardContent className="p-4">
+								<CardTitle className="text-xl mb-2">
+									{place.name}
+								</CardTitle>
+								<div className="flex items-center mb-2 text-muted-foreground">
+									<MapPin className="w-4 h-4 mr-1" />
+									<span className="text-sm">
+										{place.city}
 									</span>
-								)}
-							</div>
-
-							<div className="mb-2">
-								<div className="flex flex-wrap gap-1">
-									{place.travelTags.slice(0, 3).map((tag) => (
-										<span
-											key={tag}
-											className="px-2 py-1 bg-primary/10 text-primary rounded-full text-xs"
-										>
-											{travelTagsOptions.find(
-												(opt) => opt.value === tag,
-											)?.label || tag}
-										</span>
-									))}
-									{place.travelTags.length > 3 && (
-										<span className="px-2 py-1 bg-muted text-muted-foreground rounded-full text-xs">
-											+{place.travelTags.length - 3} more
+								</div>
+								<div className="flex items-center mb-3">
+									<Star className="w-5 h-5 text-yellow-400 fill-current" />
+									<span className="ml-1 font-semibold">
+										{place.rating.toFixed(1)}
+									</span>
+									{distance !== "none" && userCoordinates && (
+										<span className="ml-auto text-sm text-muted-foreground">
+											{calculateDistance(
+												userCoordinates.lat,
+												userCoordinates.lng,
+												place.coordinates.lat,
+												place.coordinates.lng,
+											).toFixed(1)}{" "}
+											{t(
+												"recommendationsPage.distanceUnit",
+											)}
 										</span>
 									)}
 								</div>
-							</div>
 
-							<div className="flex flex-wrap gap-1">
-								{place.travelCategories
-									.slice(0, 2)
-									.map((category) => (
-										<span
-											key={category}
-											className="px-2 py-1 bg-secondary/10 text-secondary-foreground rounded-full text-xs"
-										>
-											{travelCategoriesOptions.find(
-												(opt) => opt.value === category,
-											)?.label || category}
+								<div className="mb-2">
+									<div className="flex flex-wrap gap-1">
+										{place.travelTags
+											.slice(0, 3)
+											.map((tag) => (
+												<span
+													key={tag}
+													className="px-2 py-1 bg-primary/10 text-primary rounded-full text-xs"
+												>
+													{t(
+														`travelTagsOptions.${tag}`,
+													)}
+												</span>
+											))}
+										{place.travelTags.length > 3 && (
+											<span className="px-2 py-1 bg-muted text-muted-foreground rounded-full text-xs">
+												{t(
+													"recommendationsPage.moreTags",
+													{
+														count:
+															place.travelTags
+																.length - 3,
+													},
+												)}
+											</span>
+										)}
+									</div>
+								</div>
+
+								<div className="flex flex-wrap gap-1">
+									{place.travelCategories
+										.slice(0, 2)
+										.map((category) => (
+											<span
+												key={category}
+												className="px-2 py-1 bg-secondary/10 text-secondary-foreground rounded-full text-xs"
+											>
+												{t(
+													`travelCategoriesOptions.${category}`,
+												)}
+											</span>
+										))}
+									{place.travelCategories.length > 2 && (
+										<span className="px-2 py-1 bg-muted text-muted-foreground rounded-full text-xs">
+											{t(
+												"recommendationsPage.moreCategories",
+												{
+													count:
+														place.travelCategories
+															.length - 2,
+												},
+											)}
 										</span>
-									))}
-								{place.travelCategories.length > 2 && (
-									<span className="px-2 py-1 bg-muted text-muted-foreground rounded-full text-xs">
-										+{place.travelCategories.length - 2}{" "}
-										more
-									</span>
-								)}
-							</div>
-						</CardContent>
-					</Card>
+									)}
+								</div>
+							</CardContent>
+						</Card>
+					</Link>
 				))}
 			</div>
 
@@ -638,12 +717,12 @@ export default function RecommendationsPage() {
 					<div className="text-muted-foreground mb-4">
 						<Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
 						<h3 className="text-lg font-semibold mb-2">
-							No places found
+							{t("recommendationsPage.noPlacesFoundTitle")}
 						</h3>
-						<p>Try adjusting your filters or search terms</p>
+						<p>{t("recommendationsPage.noPlacesFoundMessage")}</p>
 					</div>
 					<Button variant="outline" onClick={clearFilters}>
-						Clear All Filters
+						{t("recommendationsPage.clearAllFiltersButton")}
 					</Button>
 				</div>
 			)}
@@ -656,7 +735,7 @@ const places = [
 		id: 1,
 		name: "VDNH (Exhibition Center of Ukraine)",
 		city: "Kyiv",
-		image: "https://www.alamy.com/stock-photo/soviet-vdnh-architecture-in-kiev.html", 
+		image: "https://www.alamy.com/stock-photo/soviet-vdnh-architecture-in-kiev.html",
 		travelTags: [
 			"relaxation-wellness",
 			"family-travel",
@@ -670,7 +749,7 @@ const places = [
 		id: 2,
 		name: "Andriyivskyy Descent",
 		city: "Kyiv",
-		image: "https://destinations.ua/storage/crop/articles/slider_173_max.jpg", 
+		image: "https://destinations.ua/storage/crop/articles/slider_173_max.jpg",
 		travelTags: ["historical-sites", "cultural-immersion", "art-museums"],
 		travelCategories: ["ancient-streets", "architecture"],
 		rating: 4.8,
@@ -680,7 +759,7 @@ const places = [
 		id: 3,
 		name: "Pyrohiv Museum",
 		city: "Kyiv",
-		image: "https://www.shutterstock.com/search/pyrohiv-museum", 
+		image: "https://www.shutterstock.com/search/pyrohiv-museum",
 		travelTags: ["historical-sites", "photography", "nature-wildlife"],
 		travelCategories: ["open-air-museums", "parks"],
 		rating: 4.7,
@@ -690,70 +769,95 @@ const places = [
 		id: 4,
 		name: "Natalka Park",
 		city: "Kyiv",
-		image: "https://scontent.fplv1-1.fna.fbcdn.net/v/t39.30808-6/473779983_1012373487584468_3843425620001693165_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=106&ccb=1-7&_nc_sid=cc71e4&_nc_ohc=60Ep0PyK6kMQ7kNvwHpAbrD&_nc_oc=AdldsViTGAUmZm-nhTaUOwCAJuGNrAOWKDrljvhCpk8lA0iRPmQLaXnvO4sJEMLaPNo&_nc_zt=23&_nc_ht=scontent.fplv1-1.fna&_nc_gid=zgYOVW4UZBYFTYCdiMZBUA&oh=00_AfKWkuDu7ZCt4vdNavHgERve7oN07E9LVTp2dJI4vOQcJQ&oe=68437F2D", // :contentReference[oaicite:3]{index=3}
-		travelTags: ["relaxation-wellness", "nature-wildlife", "family-travel"],
-		travelCategories: ["parks", "riverfronts"],
+		image: "https://scontent.fplv1-1.fna.fbcdn.net/v/t39.30808-6/473779983_1012373487584",
+		travelTags: ["nature-wildlife", "relaxation-wellness", "family-travel"],
+		travelCategories: ["parks", "river-banks"],
 		rating: 4.9,
-		coordinates: { lat: 50.5212, lng: 30.5056 },
+		coordinates: { lat: 50.4907, lng: 30.5401 },
 	},
 	{
 		id: 5,
-		name: "SkyBar",
-		city: "Kyiv",
-		image: "https://skybar.ua/en/", 
-		travelTags: ["nightlife-entertainment", "luxury-travel"],
-		travelCategories: ["bars-clubs"],
-		rating: 4.2,
-		coordinates: { lat: 50.4453, lng: 30.5207 },
+		name: "Lviv Old Town",
+		city: "Lviv",
+		image: "https://www.shutterstock.com/search/lviv-old-town",
+		travelTags: [
+			"historical-sites",
+			"cultural-immersion",
+			"architecture",
+			"food-cuisine",
+		],
+		travelCategories: ["metropolitan-cities", "ancient-ruins"],
+		rating: 4.9,
+		coordinates: { lat: 49.8419, lng: 24.0315 },
 	},
 	{
 		id: 6,
-		name: "Kyiv Pechersk Lavra",
-		city: "Kyiv",
-		image: "https://lh3.googleusercontent.com/gps-cs-s/AC9h4nqCNPUepMqds9PuSP2mELTMC5OfwAnozCeY3ErQ9P6vHzS4OWen3GgRjhmjMm7BUMagcShuBwyQupIsxxVQdNJ37GQTU1wDI1oJQT4GKx_AT7o6ViBoXeIisEQuCTEdMG6L27k=s1360-w1360-h1020-rw", // :contentReference[oaicite:5]{index=5}
-		travelTags: ["historical-sites", "cultural-immersion", "photography"],
-		travelCategories: ["monasteries", "UNESCO-heritage"],
-		rating: 4.8,
-		coordinates: { lat: 50.4346, lng: 30.5571 },
+		name: "Carpathian Mountains",
+		city: "Zakarpattia Oblast",
+		image: "https://www.shutterstock.com/search/carpathian-mountains",
+		travelTags: [
+			"adventure-sports",
+			"nature-wildlife",
+			"photography",
+			"relaxation-wellness",
+		],
+		travelCategories: ["mountain-ranges", "rural-countryside"],
+		rating: 4.7,
+		coordinates: { lat: 48.2917, lng: 24.5967 },
 	},
 	{
 		id: 7,
-		name: "Hydropark",
-		city: "Kyiv",
-		image: "https://www.gettyimages.com/photos/hydropark-in-kyiv",
-		travelTags: ["nature-wildlife", "family-travel", "adventure-sports"],
-		travelCategories: ["parks", "river-beaches"],
-		rating: 4.1,
-		coordinates: { lat: 50.4503, lng: 30.5695 },
+		name: "Odesa Opera and Ballet Theater",
+		city: "Odesa",
+		image: "https://www.shutterstock.com/search/odesa-opera-ballet-theater",
+		travelTags: [
+			"art-museums",
+			"cultural-immersion",
+			"architecture",
+			"nightlife-entertainment",
+		],
+		travelCategories: ["metropolitan-cities", "theaters"],
+		rating: 4.8,
+		coordinates: { lat: 46.4851, lng: 30.7408 },
 	},
 	{
 		id: 8,
-		name: "Hryshko Botanical Garden",
-		city: "Kyiv",
-		image: "https://www.gettyimages.com/photos/hryshko-national-botanical-garden", 
-		travelTags: ["nature-wildlife", "photography", "relaxation-wellness"],
-		travelCategories: ["parks", "botanical-gardens"],
-		rating: 4.7,
-		coordinates: { lat: 50.4053, lng: 30.5637 },
+		name: "Kamianets-Podilskyi Castle",
+		city: "Kamianets-Podilskyi",
+		image: "https://www.shutterstock.com/search/kamianets-podilskyi-castle",
+		travelTags: [
+			"historical-sites",
+			"architecture",
+			"photography",
+			"cultural-immersion",
+		],
+		travelCategories: ["ancient-ruins", "castles"],
+		rating: 4.9,
+		coordinates: { lat: 48.675, lng: 26.585 },
 	},
 	{
 		id: 9,
-		name: "Trukhaniv Island",
-		city: "Kyiv",
-		image: "https://www.gettyimages.com/photos/trukhaniv-island-kyiv",
-		travelTags: ["nature-wildlife", "adventure-sports", "eco-tourism"],
-		travelCategories: ["islands", "beaches"],
-		rating: 4.3,
-		coordinates: { lat: 50.4683, lng: 30.5391 },
+		name: "Chernivtsi National University",
+		city: "Chernivtsi",
+		image: "https://www.shutterstock.com/search/chernivtsi-national-university",
+		travelTags: [
+			"architecture",
+			"historical-sites",
+			"photography",
+			"cultural-immersion",
+		],
+		travelCategories: ["universities", "architectural-marvels"],
+		rating: 4.7,
+		coordinates: { lat: 48.2979, lng: 25.9366 },
 	},
 	{
 		id: 10,
-		name: "Vozdvyzhenka",
-		city: "Kyiv",
-		image: "https://www.gettyimages.com/photos/vozdvyzhenka-kyiv",
-		travelTags: ["architecture", "photography", "shopping-markets"],
-		travelCategories: ["urban-quarters", "luxury-housing"],
-		rating: 4.4,
-		coordinates: { lat: 50.4608, lng: 30.5082 },
+		name: "Sofiyivsky Park",
+		city: "Uman",
+		image: "https://www.shutterstock.com/search/sofiyivsky-park",
+		travelTags: ["nature-wildlife", "relaxation-wellness", "photography"],
+		travelCategories: ["parks", "botanical-gardens"],
+		rating: 4.8,
+		coordinates: { lat: 48.7844, lng: 30.2227 },
 	},
 ];

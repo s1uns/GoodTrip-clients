@@ -35,6 +35,7 @@ import {
 import { formatNumber } from "@/shared/utils/helpers/formatNumber";
 import { Link } from "react-router-dom";
 import { ROUTES } from "@/shared/constants/routes";
+import { useTranslation } from "react-i18next";
 
 interface UserInfo {
 	id: string;
@@ -704,6 +705,8 @@ const simulateApiCall = (
 };
 
 export default function UsersPage() {
+	const { t } = useTranslation();
+
 	const [users, setUsers] = useState<UserInfo[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [loadingMore, setLoadingMore] = useState(false);
@@ -775,8 +778,14 @@ export default function UsersPage() {
 	useEffect(() => {
 		if (filteredUsers.length > 0) {
 			fetchUsers(true);
+		} else if (searchQuery || filterBySubscription !== "all") {
+			setLoading(false);
+			setTotalUsers(0);
+			setUsers([]); 
+		} else {
+			fetchUsers(true);
 		}
-	}, [filteredUsers]);
+	}, [filteredUsers, searchQuery, filterBySubscription]);
 
 	const fetchUsers = async (isInitial = false) => {
 		if (isInitial) {
@@ -804,7 +813,7 @@ export default function UsersPage() {
 			setHasMore(response.hasMore);
 			setTotalUsers(response.total);
 		} catch (err) {
-			setError("Failed to load users. Please try again.");
+			setError(t("failedToLoadUsers"));
 		} finally {
 			setLoading(false);
 			setLoadingMore(false);
@@ -851,7 +860,7 @@ export default function UsersPage() {
 					<div className="text-center">
 						<Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
 						<p className="text-muted-foreground">
-							Loading users...
+							{t("loadingUsers")}
 						</p>
 					</div>
 				</div>
@@ -864,7 +873,7 @@ export default function UsersPage() {
 			<div className="container mx-auto px-4 py-8">
 				<div className="text-center">
 					<h1 className="text-2xl font-bold mb-4">
-						Error Loading Users
+						{t("errorLoadingUsers")}
 					</h1>
 					<p className="text-muted-foreground mb-4">{error}</p>
 					<Button
@@ -872,7 +881,7 @@ export default function UsersPage() {
 						className="flex items-center gap-2"
 					>
 						<RefreshCw className="h-4 w-4" />
-						Try Again
+						{t("tryAgain")}
 					</Button>
 				</div>
 			</div>
@@ -885,11 +894,10 @@ export default function UsersPage() {
 				<div>
 					<h1 className="text-3xl font-bold flex items-center gap-2">
 						<Users className="w-8 h-8" />
-						Discover Users
+						{t("discoverUsers")}
 					</h1>
 					<p className="text-muted-foreground mt-1">
-						Find and connect with fellow travelers from around the
-						world
+						{t("findAndConnect")}
 					</p>
 				</div>
 				{activeFiltersCount > 0 && (
@@ -899,7 +907,7 @@ export default function UsersPage() {
 						className="flex items-center gap-2"
 					>
 						<X className="h-4 w-4" />
-						Clear Filters ({activeFiltersCount})
+						{t("clearFilters")} ({activeFiltersCount})
 					</Button>
 				)}
 			</div>
@@ -908,21 +916,21 @@ export default function UsersPage() {
 				<CardHeader>
 					<CardTitle className="flex items-center gap-2">
 						<Filter className="h-5 w-5" />
-						Search & Filter
+						{t("searchAndFilter")}
 					</CardTitle>
 					<CardDescription>
-						Find users by name, username, or subscription status
+						{t("findUsersByCriteria")}
 					</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-4">
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 						<div className="space-y-2">
-							<Label htmlFor="search">Search Users</Label>
+							<Label htmlFor="search">{t("searchUsers")}</Label>
 							<div className="relative">
 								<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
 								<Input
 									id="search"
-									placeholder="Search by name or username..."
+									placeholder={t("searchByNameOrUsername")}
 									value={searchQuery}
 									onChange={(e) =>
 										setSearchQuery(e.target.value)
@@ -934,59 +942,61 @@ export default function UsersPage() {
 
 						<div className="space-y-2">
 							<Label htmlFor="subscription-filter">
-								Subscription Status
+								{t("subscriptionStatus")}
 							</Label>
 							<Select
 								value={filterBySubscription}
 								onValueChange={setFilterBySubscription}
 							>
 								<SelectTrigger id="subscription-filter">
-									<SelectValue placeholder="Filter by subscription" />
+									<SelectValue
+										placeholder={t("filterBySubscription")}
+									/>
 								</SelectTrigger>
 								<SelectContent>
 									<SelectItem value="all">
-										All Users
+										{t("allUsers")}
 									</SelectItem>
 									<SelectItem value="subscribed">
-										Subscribed
+										{t("subscribed")}
 									</SelectItem>
 									<SelectItem value="not-subscribed">
-										Not Subscribed
+										{t("notSubscribed")}
 									</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>
 
 						<div className="space-y-2">
-							<Label htmlFor="sort-by">Sort By</Label>
+							<Label htmlFor="sort-by">{t("sortBy")}</Label>
 							<Select value={sortBy} onValueChange={setSortBy}>
 								<SelectTrigger id="sort-by">
-									<SelectValue placeholder="Sort by" />
+									<SelectValue placeholder={t("sortBy")} />
 								</SelectTrigger>
 								<SelectContent>
 									<SelectItem value="rating-desc">
-										Highest Rating
+										{t("highestRating")}
 									</SelectItem>
 									<SelectItem value="rating-asc">
-										Lowest Rating
+										{t("lowestRating")}
 									</SelectItem>
 									<SelectItem value="followers-desc">
-										Most Followers
+										{t("mostFollowers")}
 									</SelectItem>
 									<SelectItem value="followers-asc">
-										Least Followers
+										{t("leastFollowers")}
 									</SelectItem>
 									<SelectItem value="reviews-desc">
-										Most Reviews
+										{t("mostReviews")}
 									</SelectItem>
 									<SelectItem value="reviews-asc">
-										Least Reviews
+										{t("leastReviews")}
 									</SelectItem>
 									<SelectItem value="name-asc">
-										Name (A-Z)
+										{t("nameAsc")}
 									</SelectItem>
 									<SelectItem value="name-desc">
-										Name (Z-A)
+										{t("nameDesc")}
 									</SelectItem>
 								</SelectContent>
 							</Select>
@@ -997,9 +1007,12 @@ export default function UsersPage() {
 
 			<div className="mb-4">
 				<p className="text-muted-foreground">
-					Showing {users.length} of {totalUsers} users
+					{t("showingUsers", {
+						current: users.length,
+						total: totalUsers,
+					})}
 					{totalUsers !== mockUsers.length &&
-						` (${totalUsers} match your filters)`}
+						t("matchesYourFilters", { totalFiltered: totalUsers })}
 				</p>
 			</div>
 
@@ -1007,16 +1020,16 @@ export default function UsersPage() {
 				<div className="text-center py-12">
 					<Users className="w-16 h-16 mx-auto text-muted-foreground opacity-50 mb-4" />
 					<h3 className="text-lg font-semibold mb-2">
-						No users found
+						{t("noUsersFound")}
 					</h3>
 					<p className="text-muted-foreground mb-4">
 						{totalUsers === 0
-							? "Try adjusting your search or filter criteria"
-							: "No users available at the moment"}
+							? t("tryAdjustingFilters")
+							: t("noUsersAvailable")}
 					</p>
 					{activeFiltersCount > 0 && (
 						<Button variant="outline" onClick={clearFilters}>
-							Clear All Filters
+							{t("clearAllFilters")}
 						</Button>
 					)}
 				</div>
@@ -1031,7 +1044,6 @@ export default function UsersPage() {
 								<CardContent className="p-4">
 									<div className="flex items-start justify-between mb-3">
 										<div className="flex items-center gap-3 flex-1 min-w-0">
-
 											<div className="min-w-0 flex-1">
 												<Link
 													to={`${ROUTES.PROFILE}/${user.id}`}
@@ -1045,7 +1057,6 @@ export default function UsersPage() {
 												<p className="text-sm text-muted-foreground truncate">
 													@{user.username}
 												</p>
-
 											</div>
 										</div>
 										<Button
@@ -1065,12 +1076,12 @@ export default function UsersPage() {
 											{user.isSubscribed ? (
 												<>
 													<UserMinus className="w-4 h-4 mr-1" />
-													Unsubscribe
+													{t("unsubscribe")}
 												</>
 											) : (
 												<>
 													<UserPlus className="w-4 h-4 mr-1" />
-													Subscribe
+													{t("subscribe")}
 												</>
 											)}
 										</Button>
@@ -1086,7 +1097,7 @@ export default function UsersPage() {
 													)}
 												</div>
 												<div className="text-xs text-muted-foreground">
-													Rating
+													{t("rating")}
 												</div>
 											</div>
 										</div>
@@ -1100,7 +1111,7 @@ export default function UsersPage() {
 													)}
 												</div>
 												<div className="text-xs text-muted-foreground">
-													Reviews
+													{t("reviews")}
 												</div>
 											</div>
 										</div>
@@ -1112,9 +1123,13 @@ export default function UsersPage() {
 											{formatNumber(
 												user.stats.followers,
 											)}{" "}
-											followers
+											{t("followers")}
 										</span>
-										<span>Joined {user.joinDate}</span>
+										<span>
+											{t("joined", {
+												date: user.joinDate,
+											})}
+										</span>
 									</div>
 
 									{user.isSubscribed && (
@@ -1123,7 +1138,7 @@ export default function UsersPage() {
 												variant="secondary"
 												className="text-xs"
 											>
-												Subscribed
+												{t("subscribed")}
 											</Badge>
 										</div>
 									)}
@@ -1144,10 +1159,10 @@ export default function UsersPage() {
 								{loadingMore ? (
 									<>
 										<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-										Loading more users...
+										{t("loadingMoreUsers")}
 									</>
 								) : (
-									<>Load More Users</>
+									<>{t("loadMoreUsers")}</>
 								)}
 							</Button>
 						</div>
@@ -1156,8 +1171,7 @@ export default function UsersPage() {
 					{!hasMore && users.length > 0 && (
 						<div className="text-center mt-8 py-4 border-t">
 							<p className="text-muted-foreground">
-								You've reached the end! Showing all{" "}
-								{users.length} users.
+								{t("youReachedEnd", { count: users.length })}
 							</p>
 						</div>
 					)}

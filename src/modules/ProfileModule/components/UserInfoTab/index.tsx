@@ -15,6 +15,7 @@ import { MultiSelect } from "@/components/ui/multi-select";
 import { Edit, Save, Star } from "lucide-react";
 import { useUserStore } from "@/store/userStore";
 import { convertDateToDDMonYYYY } from "@/shared/utils/helpers/convertDateToDDMonYYYY";
+import { useTranslation } from "react-i18next";
 
 const travelPreferencesOptions = [
 	{ label: "Adventure", value: "adventure" },
@@ -43,6 +44,7 @@ const travelCategoriesOptions = [
 ];
 
 export default function UserInfoTab() {
+	const { t, i18n } = useTranslation();
 	const [isEditing, setIsEditing] = useState(false);
 	const user = useUserStore((state: any) => state.user);
 	const [firstName, setFirstName] = useState(user?.firstName || "");
@@ -55,6 +57,15 @@ export default function UserInfoTab() {
 	const [selectedTravelCategories, setSelectedTravelCategories] = useState<
 		string[]
 	>([]);
+
+	useEffect(() => {
+		if (user?.travelPreferences) {
+			setSelectedTravelPreferences(user.travelPreferences);
+		}
+		if (user?.travelCategories) {
+			setSelectedTravelCategories(user.travelCategories);
+		}
+	}, [user]);
 
 	const handleEdit = () => {
 		setIsEditing(true);
@@ -71,11 +82,12 @@ export default function UserInfoTab() {
 			travelCategories: selectedTravelCategories,
 		});
 	};
+
 	return (
 		<Card>
 			<CardHeader>
 				<div className="flex justify-between items-center">
-					<CardTitle>Profile Information</CardTitle>
+					<CardTitle>{t("profileInfo.title")}</CardTitle>
 					<Button
 						onClick={isEditing ? handleSave : handleEdit}
 						variant="outline"
@@ -85,17 +97,21 @@ export default function UserInfoTab() {
 						) : (
 							<Edit className="mr-2 h-4 w-4" />
 						)}
-						{isEditing ? "Save" : "Edit"}
+						{isEditing
+							? t("profileInfo.save")
+							: t("profileInfo.edit")}
 					</Button>
 				</div>
 				<CardDescription>
-					Manage your profile information
+					{t("profileInfo.description")}
 				</CardDescription>
 			</CardHeader>
 			<CardContent className="space-y-4">
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 					<div className="space-y-2">
-						<Label htmlFor="firstName">First Name</Label>
+						<Label htmlFor="firstName">
+							{t("profileInfo.firstName")}
+						</Label>
 						<Input
 							id="firstName"
 							name="firstName"
@@ -105,7 +121,9 @@ export default function UserInfoTab() {
 						/>
 					</div>
 					<div className="space-y-2">
-						<Label htmlFor="lastName">Last Name</Label>
+						<Label htmlFor="lastName">
+							{t("profileInfo.lastName")}
+						</Label>
 						<Input
 							id="lastName"
 							name="lastName"
@@ -116,7 +134,7 @@ export default function UserInfoTab() {
 					</div>
 				</div>
 				<div className="space-y-2">
-					<Label htmlFor="email">Email</Label>
+					<Label htmlFor="email">{t("profileInfo.email")}</Label>
 					<Input
 						id="email"
 						name="email"
@@ -127,7 +145,7 @@ export default function UserInfoTab() {
 					/>
 				</div>
 				<div className="space-y-2">
-					<Label htmlFor="bio">Bio</Label>
+					<Label htmlFor="bio">{t("profileInfo.bio")}</Label>
 					<Textarea
 						id="bio"
 						name="bio"
@@ -138,24 +156,26 @@ export default function UserInfoTab() {
 				</div>
 				<div className="space-y-2">
 					<Label htmlFor="travelPreferences">
-						Travel Preferences
+						{t("profileInfo.travelPreferences")}
 					</Label>
 					<MultiSelect
 						options={travelPreferencesOptions}
 						selected={selectedTravelPreferences}
 						onChange={setSelectedTravelPreferences}
-						placeholder="Select your travel preferences..."
+						placeholder={t("profileInfo.selectTravelPreferences")}
 						disabled={!isEditing}
 					/>
 				</div>
 
 				<div className="space-y-2">
-					<Label htmlFor="travelCategories">Travel Categories</Label>
+					<Label htmlFor="travelCategories">
+						{t("profileInfo.travelCategories")}
+					</Label>
 					<MultiSelect
 						options={travelCategoriesOptions}
 						selected={selectedTravelCategories}
 						onChange={setSelectedTravelCategories}
-						placeholder="Select your preferred travel categories..."
+						placeholder={t("profileInfo.selectTravelCategories")}
 						disabled={!isEditing}
 					/>
 				</div>
@@ -164,15 +184,28 @@ export default function UserInfoTab() {
 				<div className="flex space-x-4">
 					<div className="flex items-center">
 						<Star className="mr-2 h-5 w-5 text-muted-foreground" />
-						<span>{user.rating} User Rating</span>
+						<span>
+							{t("profileInfo.userRating", {
+								rating: user.rating,
+							})}
+						</span>
 					</div>
 					<div className="flex items-center">
 						<Edit className="mr-2 h-5 w-5 text-muted-foreground" />
-						<span>{user.reviewsCount} Reviews Written</span>
+						<span>
+							{t("profileInfo.reviewsWritten", {
+								count: user.reviewsCount,
+							})}
+						</span>
 					</div>
 				</div>
 				<div className="text-muted-foreground self-end">
-					Joined on {convertDateToDDMonYYYY(user.joinDate)}
+					{t("profileInfo.joinedOn", {
+						date: convertDateToDDMonYYYY(
+							user.joinDate,
+							i18n.language,
+						),
+					})}
 				</div>
 			</CardFooter>
 		</Card>
