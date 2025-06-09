@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/select";
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface ReviewSectionHeaderProps {
 	totalReviews: number;
@@ -28,38 +29,66 @@ const ReviewSectionHeader = ({
 	onWriteReviewClick,
 	showReviewForm,
 }: ReviewSectionHeaderProps) => {
+	const { t } = useTranslation(); 
+
 	return (
 		<>
 			<CardHeader>
 				<div className="flex justify-between items-center">
-					<CardTitle>Reviews ({totalReviews})</CardTitle>
+					<CardTitle>
+						{t("placeView.reviewsSection.title", { totalReviews })}
+					</CardTitle>
 					<Button onClick={onWriteReviewClick}>
 						<Plus className="w-4 h-4 mr-2" />
-						{showReviewForm ? "Close Review Form" : "Write Review"}
+						{showReviewForm
+							? t("placeView.reviewsSection.closeReviewForm")
+							: t("placeView.reviewsSection.writeReview")}
 					</Button>
 				</div>
 			</CardHeader>
 			<div className="flex flex-col md:flex-row gap-4 mb-6 px-6">
 				<Select value={reviewFilter} onValueChange={setReviewFilter}>
 					<SelectTrigger className="w-full md:w-[180px]">
-						<SelectValue placeholder="Filter reviews" />
+						<SelectValue
+							placeholder={t(
+								"placeView.reviewsSection.filterPlaceholder",
+							)}
+						/>
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="all">All Reviews</SelectItem>
-						<SelectItem value="positive">Positive Only</SelectItem>
-						<SelectItem value="negative">Negative Only</SelectItem>
+						<SelectItem value="all">
+							{t("placeView.reviewsSection.allReviews")}
+						</SelectItem>
+						<SelectItem value="positive">
+							{t("placeView.reviewsSection.positiveReviews")}
+						</SelectItem>
+						<SelectItem value="negative">
+							{t("placeView.reviewsSection.negativeReviews")}
+						</SelectItem>
 					</SelectContent>
 				</Select>
 
 				<Select value={reviewSort} onValueChange={setReviewSort}>
 					<SelectTrigger className="w-full md:w-[180px]">
-						<SelectValue placeholder="Sort by" />
+						<SelectValue
+							placeholder={t(
+								"placeView.reviewsSection.sortPlaceholder",
+							)}
+						/>
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="newest">Newest First</SelectItem>
-						<SelectItem value="oldest">Oldest First</SelectItem>
-						<SelectItem value="highest">Highest Rating</SelectItem>
-						<SelectItem value="lowest">Lowest Rating</SelectItem>
+						<SelectItem value="newest">
+							{t("placeView.reviewsSection.newest")}
+						</SelectItem>
+						<SelectItem value="oldest">
+							{t("placeView.reviewsSection.oldest")}
+						</SelectItem>
+						<SelectItem value="highest">
+							{t("placeView.reviewsSection.highestRating")}
+						</SelectItem>
+						<SelectItem value="lowest">
+							{t("placeView.reviewsSection.lowestRating")}
+						</SelectItem>
 					</SelectContent>
 				</Select>
 			</div>

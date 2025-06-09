@@ -12,7 +12,6 @@ import { Reply } from "@/shared/types/Reply";
 import { ENTITY_REPLY } from "@/shared/constants/place";
 import emptyPic from "@/assets/emptyPic.png";
 import { convertDateToDDMonYYYY } from "@/shared/utils/helpers/convertDateToDDMonYYYY";
-import i18n from "@/config/i18n";
 import { useTranslation } from "react-i18next";
 
 interface ReplyItemProps {
@@ -41,7 +40,7 @@ const ReplyItem = memo<ReplyItemProps>(
 		openReportDialog,
 		handleReply,
 	}) => {
-		const { i18n } = useTranslation();
+		const { t, i18n } = useTranslation();
 		return (
 			<div className="flex items-start gap-3">
 				<div className="flex-1">
@@ -51,7 +50,10 @@ const ReplyItem = memo<ReplyItemProps>(
 								{reply.username}
 							</p>
 							<span className="text-xs text-muted-foreground">
-								{convertDateToDDMonYYYY(reply.date, i18n.language)}
+								{convertDateToDDMonYYYY(
+									reply.date,
+									i18n.language,
+								)}
 							</span>
 						</div>
 						<DropdownMenu modal={false}>
@@ -76,7 +78,7 @@ const ReplyItem = memo<ReplyItemProps>(
 											}
 										>
 											<Edit className="w-4 h-4 mr-2" />
-											Edit
+											{t("reviewItem.edit")}
 										</DropdownMenuItem>
 										<DropdownMenuItem
 											onClick={() =>
@@ -84,7 +86,7 @@ const ReplyItem = memo<ReplyItemProps>(
 											}
 										>
 											<Trash2 className="w-4 h-4 mr-2" />
-											Delete
+											{t("reviewItem.delete")}
 										</DropdownMenuItem>
 									</>
 								)}
@@ -98,7 +100,7 @@ const ReplyItem = memo<ReplyItemProps>(
 										}
 									>
 										<Flag className="w-4 h-4 mr-2" />
-										Report
+										{t("reviewItem.report")}
 									</DropdownMenuItem>
 								)}
 								<DropdownMenuItem
@@ -107,7 +109,7 @@ const ReplyItem = memo<ReplyItemProps>(
 									}
 								>
 									<MessageCircle className="w-4 h-4 mr-2" />
-									Reply
+									{t("reviewItem.reply")}
 								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
@@ -120,21 +122,23 @@ const ReplyItem = memo<ReplyItemProps>(
 									setEditReplyText(e.target.value)
 								}
 								rows={3}
-								placeholder="Edit your reply here..."
+								placeholder={t(
+									"replyItem.editReplyPlaceholder",
+								)}
 							/>
 							<div className="flex gap-2">
 								<Button
 									size="sm"
 									onClick={handleSaveEditedReply}
 								>
-									Save
+									{t("replyItem.saveButton")}
 								</Button>
 								<Button
 									variant="outline"
 									size="sm"
 									onClick={() => setEditingReplyId(null)}
 								>
-									Cancel
+									{t("replyItem.cancelButton")}
 								</Button>
 							</div>
 						</div>
@@ -148,7 +152,9 @@ const ReplyItem = memo<ReplyItemProps>(
 									<img
 										key={index}
 										src={image || emptyPic}
-										alt={`Reply image ${index + 1}`}
+										alt={t("replyItem.replyImageAlt", {
+											number: index + 1,
+										})}
 										className="w-16 h-16 object-cover rounded"
 									/>
 								),

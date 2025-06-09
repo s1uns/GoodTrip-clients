@@ -33,6 +33,7 @@ import {
 	User,
 	MapPin,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface Report {
 	id: string;
@@ -484,12 +485,14 @@ export default function AdminReportsPage() {
 	const [totalReports, setTotalReports] = useState(0);
 
 	const [searchQuery, setSearchQuery] = useState("");
-	const [statusFilter, setStatusFilter] = useState("all"); 
-	const [typeFilter, setTypeFilter] = useState("all"); 
+	const [statusFilter, setStatusFilter] = useState("all");
+	const [typeFilter, setTypeFilter] = useState("all");
 
 	const [processingActions, setProcessingActions] = useState<Set<string>>(
 		new Set(),
 	);
+
+	const { t } = useTranslation();
 
 	useEffect(() => {
 		setReports([]);
@@ -539,7 +542,7 @@ export default function AdminReportsPage() {
 	};
 
 	const handleCloseReport = async (reportId: string) => {
-		if (!confirm("Are you sure you want to close this report?")) return;
+		if (!confirm(t("reportsPage.confirmCloseReport"))) return;
 
 		setProcessingActions((prev) => new Set(prev).add(reportId));
 
@@ -575,7 +578,9 @@ export default function AdminReportsPage() {
 	) => {
 		if (
 			!confirm(
-				`Are you sure you want to delete this ${contentType}? This action cannot be undone.`,
+				t("reportsPage.confirmDeleteContent", {
+					contentType: contentType,
+				}),
 			)
 		)
 			return;
@@ -599,9 +604,11 @@ export default function AdminReportsPage() {
 			}
 
 			alert(
-				`${
-					contentType.charAt(0).toUpperCase() + contentType.slice(1)
-				} has been deleted successfully.`,
+				t("reportsPage.contentDeletedSuccess", {
+					contentType:
+						contentType.charAt(0).toUpperCase() +
+						contentType.slice(1),
+				}),
 			);
 		} catch (error) {
 			console.error("Error deleting content:", error);
@@ -619,7 +626,7 @@ export default function AdminReportsPage() {
 		userId: string,
 		userName: string,
 	) => {
-		if (!confirm(`Are you sure you want to block user "${userName}"?`))
+		if (!confirm(t("reportsPage.confirmBlockUser", { userName: userName })))
 			return;
 
 		setProcessingActions((prev) => new Set(prev).add(reportId));
@@ -640,7 +647,7 @@ export default function AdminReportsPage() {
 				mockReports[reportIndex].status = "resolved";
 			}
 
-			alert(`User "${userName}" has been blocked successfully.`);
+			alert(t("reportsPage.userBlockedSuccess", { userName: userName }));
 		} catch (error) {
 			console.error("Error blocking user:", error);
 		} finally {
@@ -681,7 +688,7 @@ export default function AdminReportsPage() {
 					<div className="text-center">
 						<Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
 						<p className="text-muted-foreground">
-							Loading reports...
+							{t("reportsPage.loadingReports")}
 						</p>
 					</div>
 				</div>
@@ -695,10 +702,10 @@ export default function AdminReportsPage() {
 				<div>
 					<h1 className="text-3xl font-bold flex items-center gap-2">
 						<AlertTriangle className="w-8 h-8" />
-						Reports Management
+						{t("reportsPage.reportsManagementTitle")}
 					</h1>
 					<p className="text-muted-foreground mt-1">
-						Review and manage user reports for content moderation
+						{t("reportsPage.reportsManagementDescription")}
 					</p>
 				</div>
 				{activeFiltersCount > 0 && (
@@ -708,7 +715,9 @@ export default function AdminReportsPage() {
 						className="flex items-center gap-2"
 					>
 						<X className="h-4 w-4" />
-						Clear Filters ({activeFiltersCount})
+						{t("reportsPage.clearFiltersButton", {
+							count: activeFiltersCount,
+						})}
 					</Button>
 				)}
 			</div>
@@ -717,21 +726,25 @@ export default function AdminReportsPage() {
 				<CardHeader>
 					<CardTitle className="flex items-center gap-2">
 						<Filter className="h-5 w-5" />
-						Search & Filter
+						{t("reportsPage.searchFilterTitle")}
 					</CardTitle>
 					<CardDescription>
-						Find reports by content, user, reason, or place
+						{t("reportsPage.searchFilterDescription")}
 					</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-4">
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 						<div className="space-y-2">
-							<Label htmlFor="search">Search Reports</Label>
+							<Label htmlFor="search">
+								{t("reportsPage.searchReportsLabel")}
+							</Label>
 							<div className="relative">
 								<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
 								<Input
 									id="search"
-									placeholder="Search by content, user, reason, or place..."
+									placeholder={t(
+										"reportsPage.searchReportsPlaceholder",
+									)}
 									value={searchQuery}
 									onChange={(e) =>
 										setSearchQuery(e.target.value)
@@ -742,46 +755,58 @@ export default function AdminReportsPage() {
 						</div>
 
 						<div className="space-y-2">
-							<Label htmlFor="status-filter">Report Status</Label>
+							<Label htmlFor="status-filter">
+								{t("reportsPage.reportStatusLabel")}
+							</Label>
 							<Select
 								value={statusFilter}
 								onValueChange={setStatusFilter}
 							>
 								<SelectTrigger id="status-filter">
-									<SelectValue placeholder="Filter by status" />
+									<SelectValue
+										placeholder={t(
+											"reportsPage.filterByStatusPlaceholder",
+										)}
+									/>
 								</SelectTrigger>
 								<SelectContent>
 									<SelectItem value="all">
-										All Reports
+										{t("reportsPage.allReports")}
 									</SelectItem>
 									<SelectItem value="pending">
-										Pending Reports
+										{t("reportsPage.pendingReports")}
 									</SelectItem>
 									<SelectItem value="resolved">
-										Resolved Reports
+										{t("reportsPage.resolvedReports")}
 									</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>
 
 						<div className="space-y-2">
-							<Label htmlFor="type-filter">Content Type</Label>
+							<Label htmlFor="type-filter">
+								{t("reportsPage.contentTypeLabel")}
+							</Label>
 							<Select
 								value={typeFilter}
 								onValueChange={setTypeFilter}
 							>
 								<SelectTrigger id="type-filter">
-									<SelectValue placeholder="Filter by type" />
+									<SelectValue
+										placeholder={t(
+											"reportsPage.filterByTypePlaceholder",
+										)}
+									/>
 								</SelectTrigger>
 								<SelectContent>
 									<SelectItem value="all">
-										All Types
+										{t("reportsPage.allTypes")}
 									</SelectItem>
 									<SelectItem value="review">
-										Reviews
+										{t("reportsPage.reviews")}
 									</SelectItem>
 									<SelectItem value="reply">
-										Replies
+										{t("reportsPage.replies")}
 									</SelectItem>
 								</SelectContent>
 							</Select>
@@ -792,9 +817,14 @@ export default function AdminReportsPage() {
 
 			<div className="mb-4">
 				<p className="text-muted-foreground">
-					Showing {reports.length} of {totalReports} reports
+					{t("reportsPage.showingReports", {
+						current: reports.length,
+						total: totalReports,
+					})}
 					{totalReports !== mockReports.length &&
-						` (${totalReports} match your filters)`}
+						t("reportsPage.matchFilters", {
+							totalFiltered: totalReports,
+						})}
 				</p>
 			</div>
 
@@ -802,16 +832,16 @@ export default function AdminReportsPage() {
 				<div className="text-center py-12">
 					<AlertTriangle className="w-16 h-16 mx-auto text-muted-foreground opacity-50 mb-4" />
 					<h3 className="text-lg font-semibold mb-2">
-						No reports found
+						{t("reportsPage.noReportsFoundTitle")}
 					</h3>
 					<p className="text-muted-foreground mb-4">
 						{totalReports === 0
-							? "Try adjusting your search or filter criteria"
-							: "No reports available"}
+							? t("reportsPage.noReportsAdjustFilter")
+							: t("reportsPage.noReportsAvailable")}
 					</p>
 					{activeFiltersCount > 0 && (
 						<Button variant="outline" onClick={clearFilters}>
-							Clear All Filters
+							{t("reportsPage.clearAllFiltersButton")}
 						</Button>
 					)}
 				</div>
@@ -842,12 +872,16 @@ export default function AdminReportsPage() {
 													"review" ? (
 														<>
 															<MessageSquare className="w-3 h-3 mr-1" />
-															Review
+															{t(
+																"reportsPage.reviewType",
+															)}
 														</>
 													) : (
 														<>
 															<MessageSquare className="w-3 h-3 mr-1" />
-															Reply
+															{t(
+																"reportsPage.replyType",
+															)}
 														</>
 													)}
 												</Badge>
@@ -860,8 +894,12 @@ export default function AdminReportsPage() {
 													}
 												>
 													{report.status === "pending"
-														? "Pending"
-														: "Resolved"}
+														? t(
+																"reportsPage.pendingStatus",
+														  )
+														: t(
+																"reportsPage.resolvedStatus",
+														  )}
 												</Badge>
 												<span className="text-sm text-muted-foreground flex items-center gap-1">
 													<Calendar className="w-3 h-3" />
@@ -882,7 +920,10 @@ export default function AdminReportsPage() {
 								<CardContent className="space-y-4">
 									<div className="space-y-2">
 										<Label className="text-sm font-semibold">
-											Reported Content:
+											{t(
+												"reportsPage.reportedContentLabel",
+											)}
+											:
 										</Label>
 										<div className="p-3 bg-muted rounded-lg">
 											<p className="text-sm">
@@ -894,7 +935,10 @@ export default function AdminReportsPage() {
 									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 										<div className="space-y-2">
 											<Label className="text-sm font-semibold">
-												Reported User:
+												{t(
+													"reportsPage.reportedUserLabel",
+												)}
+												:
 											</Label>
 											<div className="flex items-center gap-2">
 												<User className="w-4 h-4 text-muted-foreground" />
@@ -911,7 +955,10 @@ export default function AdminReportsPage() {
 										</div>
 										<div className="space-y-2">
 											<Label className="text-sm font-semibold">
-												Reported By:
+												{t(
+													"reportsPage.reportedByLabel",
+												)}
+												:
 											</Label>
 											<div className="flex items-center gap-2">
 												<User className="w-4 h-4 text-muted-foreground" />
@@ -926,7 +973,7 @@ export default function AdminReportsPage() {
 
 									<div className="space-y-2">
 										<Label className="text-sm font-semibold">
-											Reason:
+											{t("reportsPage.reasonLabel")}:
 										</Label>
 										<p className="text-sm text-orange-600 font-medium">
 											{report.reason}
@@ -935,7 +982,7 @@ export default function AdminReportsPage() {
 
 									<div className="space-y-2">
 										<Label className="text-sm font-semibold">
-											Description:
+											{t("reportsPage.descriptionLabel")}:
 										</Label>
 										<p className="text-sm text-muted-foreground">
 											{report.description}
@@ -961,7 +1008,9 @@ export default function AdminReportsPage() {
 												) : (
 													<CheckCircle className="w-4 h-4 mr-2" />
 												)}
-												Close Report
+												{t(
+													"reportsPage.closeReportButton",
+												)}
 											</Button>
 											<Button
 												variant="destructive"
@@ -983,7 +1032,14 @@ export default function AdminReportsPage() {
 												) : (
 													<Trash2 className="w-4 h-4 mr-2" />
 												)}
-												Delete {report.type}
+												{t(
+													"reportsPage.deleteContentButton",
+													{
+														contentType: t(
+															`reportsPage.${report.type}Item`,
+														),
+													},
+												)}
 											</Button>
 											<Button
 												variant="destructive"
@@ -1007,7 +1063,9 @@ export default function AdminReportsPage() {
 												) : (
 													<UserX className="w-4 h-4 mr-2" />
 												)}
-												Block User
+												{t(
+													"reportsPage.blockUserButton",
+												)}
 											</Button>
 										</div>
 									)}
@@ -1028,11 +1086,11 @@ export default function AdminReportsPage() {
 								{loadingMore ? (
 									<>
 										<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-										Loading more reports...
+										{t("reportsPage.loadingMoreReports")}
 									</>
 								) : (
 									<>
-										Load More Reports
+										{t("reportsPage.loadMoreReportsButton")}
 										<span className="ml-2 text-muted-foreground">
 											({reports.length} of {totalReports})
 										</span>
@@ -1045,8 +1103,9 @@ export default function AdminReportsPage() {
 					{!hasMore && reports.length > 0 && (
 						<div className="text-center mt-8 py-4 border-t">
 							<p className="text-muted-foreground">
-								You've reached the end! Showing all{" "}
-								{reports.length} reports.
+								{t("reportsPage.endOfReports", {
+									count: reports.length,
+								})}
 							</p>
 						</div>
 					)}

@@ -8,11 +8,9 @@ import { useCallback, useMemo, useState } from "react";
 import { useUserStore } from "../../../../store/userStore";
 import logoImg from "../../../../assets/logo.png";
 import {
-	USER_NAVIGATION_OPTIONS,
-	ADMIN_NAVIGATION_OPTIONS,
 	NavOption,
+	getLocalizedNavigation,
 } from "../../utils/navigationOptions";
-import { ROLE_USER } from "../../../../shared/constants/user";
 import { useNavigate } from "react-router-dom";
 import LanguageChangerButton from "../../../../shared/components/LanguageChanger";
 import { useTranslation } from "react-i18next";
@@ -39,11 +37,8 @@ const Header = () => {
 	}
 
 	const navOptions = useMemo(
-		() =>
-			user.role === ROLE_USER
-				? USER_NAVIGATION_OPTIONS
-				: ADMIN_NAVIGATION_OPTIONS,
-		[user],
+		() => getLocalizedNavigation(user.role, t),
+		[user.role, t],
 	);
 
 	const navigateHome = useCallback(() => navigate("/"), []);

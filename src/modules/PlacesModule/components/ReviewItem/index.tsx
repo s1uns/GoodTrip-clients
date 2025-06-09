@@ -15,6 +15,7 @@ import ReplySection from "../ReplySection";
 import ReviewActions from "../ReviewActions";
 import ReviewContent from "../ReviewContent";
 import ReviewHeader from "../ReviewHeader";
+import { useTranslation } from "react-i18next";
 
 interface ReviewProps {
 	id: string;
@@ -69,6 +70,7 @@ const ReviewItem = memo<ReviewProps>(
 		deleteReply,
 		images,
 	}: ReviewProps) => {
+		const { t } = useTranslation();
 		const [editText, setEditText] = useState(text);
 		const [editRating, setEditRating] = useState(rating);
 		const [editImages, setEditImages] = useState<string[]>(images);
@@ -257,7 +259,7 @@ const ReviewItem = memo<ReviewProps>(
 							{selectedImage && (
 								<img
 									src={selectedImage || emptyPic}
-									alt="Full size review image"
+									alt={t("reviewItem.fullSizeImageAlt")}
 									className="max-w-full max-h-full object-contain"
 								/>
 							)}

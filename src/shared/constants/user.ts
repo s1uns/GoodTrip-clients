@@ -3,7 +3,7 @@ export const ROLE_ADMINISTRATOR = 1;
 
 export const mockedUser = {
 	userId: "1234-5678-9012-3456",
-	role: ROLE_USER,
+	role: ROLE_ADMINISTRATOR,
 	login: "JohnDOeee123",
 	email: "johndoe@gmail.com",
 	username: "hereIsJohnny",

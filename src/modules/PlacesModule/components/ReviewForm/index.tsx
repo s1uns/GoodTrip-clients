@@ -31,7 +31,7 @@ const ReviewForm = ({
 	const [text, setText] = useState(initialText);
 	const [images, setImages] = useState<string[]>(initialImages);
 
-	const handleAddImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleAddImage = (e: ChangeEvent<HTMLInputElement>) => {
 		const files = e.target.files;
 		if (files) {
 			const newImages: string[] = [];

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin } from "lucide-react";
 import { Stars } from "..";
 import { formatNumber } from "@/shared/utils/helpers/formatNumber";
+import { useTranslation } from "react-i18next";
 
 interface LocationInfoCardProps {
 	name: string;
@@ -24,10 +25,20 @@ const LocationInfoCard = ({
 	address,
 	rating,
 	totalReviews,
-
 	types,
 	placeTypesMapping,
 }: LocationInfoCardProps) => {
+	const { t } = useTranslation();
+
+	const getReviewsText = (count: number) => {
+		if (count === 1) {
+			return t("locationInfoCard.oneReview");
+		}
+		return `${formatNumber(totalReviews)} ${t(
+			"locationInfoCard.reviewsCount",
+		)}`;
+	};
+
 	return (
 		<Card>
 			<CardHeader>
@@ -45,7 +56,7 @@ const LocationInfoCard = ({
 							<span className="ml-2 font-semibold">{rating}</span>
 						</div>
 						<p className="text-sm text-muted-foreground">
-							{formatNumber(totalReviews)} reviews
+							{getReviewsText(totalReviews)}
 						</p>
 					</div>
 				</div>
@@ -53,7 +64,9 @@ const LocationInfoCard = ({
 			<CardContent>
 				<div className="space-y-4">
 					<div>
-						<h3 className="font-semibold mb-2">Categories</h3>
+						<h3 className="font-semibold mb-2">
+							{t("locationInfoCard.categoriesTitle")}
+						</h3>
 						<div className="flex flex-wrap gap-2">
 							{types.map((type: string) => (
 								<Badge key={type} variant="secondary">
