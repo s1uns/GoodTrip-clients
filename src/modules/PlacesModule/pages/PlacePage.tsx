@@ -13,6 +13,7 @@ import {
 } from "../components";
 import { Review } from "@/shared/types/Review";
 import { Reply } from "@/shared/types/Reply";
+import { useTranslation } from "react-i18next";
 
 const placeTypesMapping: Record<string, string> = {
 	amusement_park: "Amusement Park",
@@ -124,7 +125,7 @@ const mockReviews: Review[] = [
 		date: "2025-01-10",
 		text: "Great place to visit, but it can get quite crowded during peak hours. The facilities are well-maintained and the staff is friendly.",
 		images: [],
-		likes: 18,
+		likes: 1800,
 		dislikes: 1,
 		isLiked: true,
 		isDisliked: false,
@@ -175,6 +176,7 @@ const mockReviews: Review[] = [
 
 const PlaceView = () => {
 	const { placeId } = useParams();
+	const { t } = useTranslation();
 	const [place, setPlace] = useState<any>(null);
 	const [reviews, setReviews] = useState<any[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -252,7 +254,7 @@ const PlaceView = () => {
 
 	const handleOpenInGoogleMaps = () =>
 		window.open(
-			`https://www.google.com/maps/search/?api=1&query=${place.coordinates.lat},${place.coordinates.lng}`,
+			`https://www.google.com/maps/search/?api=1&query=$${place.coordinates.lat},${place.coordinates.lng}`,
 			"_blank",
 		);
 
@@ -411,7 +413,7 @@ const PlaceView = () => {
 					<div className="text-center">
 						<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
 						<p className="text-muted-foreground">
-							Loading place details...
+							{t("placeView.loadingDetails")}
 						</p>
 					</div>
 				</div>
@@ -423,17 +425,18 @@ const PlaceView = () => {
 		return (
 			<div className="container mx-auto px-4 py-8">
 				<div className="text-center">
-					<h1 className="text-2xl font-bold mb-4">Place Not Found</h1>
+					<h1 className="text-2xl font-bold mb-4">
+						{t("placeView.placeNotFoundTitle")}
+					</h1>
 					<p className="text-muted-foreground">
-						The place you're looking for doesn't exist or has been
-						removed.
+						{t("placeView.placeNotFoundDescription")}
 					</p>
 					<Button
 						variant="outline"
 						className="mt-4"
 						onClick={() => window.history.back()}
 					>
-						Go Back
+						{t("placeView.goBack")}
 					</Button>
 				</div>
 			</div>
@@ -517,9 +520,9 @@ const PlaceView = () => {
 				<div className="space-y-6">
 					<Card className="h-90">
 						<CardHeader className="flex flex-row justify-between items-center">
-							<CardTitle>Location</CardTitle>
+							<CardTitle>{t("placeView.location")}</CardTitle>
 							<Button onClick={handleOpenInGoogleMaps}>
-								Open in Google Maps
+								{t("placeView.openInGoogleMaps")}
 							</Button>
 						</CardHeader>
 						<CardContent>

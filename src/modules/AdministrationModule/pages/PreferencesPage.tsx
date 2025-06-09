@@ -24,6 +24,7 @@ import {
 	Save,
 	X,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface Category {
 	id: string;
@@ -147,7 +148,7 @@ export default function AdminPreferencesPage() {
 	const [editingTag, setEditingTag] = useState<string | null>(null);
 	const [editCategoryName, setEditCategoryName] = useState("");
 	const [editTagName, setEditTagName] = useState("");
-
+	const { t } = useTranslation();
 	const [activeTab, setActiveTab] = useState("categories");
 
 	useEffect(() => {
@@ -408,10 +409,10 @@ export default function AdminPreferencesPage() {
 			<div className="mb-6">
 				<h1 className="text-3xl font-bold flex items-center gap-2">
 					<Settings className="w-8 h-8" />
-					Travel Preferences Management
+					{t("travelPreferences.title")}
 				</h1>
 				<p className="text-muted-foreground mt-1">
-					Manage travel categories and tags for the platform
+					{t("travelPreferences.description")}
 				</p>
 			</div>
 
@@ -422,14 +423,18 @@ export default function AdminPreferencesPage() {
 						className="flex items-center gap-2"
 					>
 						<FolderOpen className="w-4 h-4" />
-						Categories ({categoriesTotalCount})
+						{t("travelPreferences.categoriesTab", {
+							count: categoriesTotalCount,
+						})}
 					</TabsTrigger>
 					<TabsTrigger
 						value="tags"
 						className="flex items-center gap-2"
 					>
 						<Tag className="w-4 h-4" />
-						Tags ({tagsTotalCount})
+						{t("travelPreferences.tagsTab", {
+							count: tagsTotalCount,
+						})}
 					</TabsTrigger>
 				</TabsList>
 
@@ -439,20 +444,22 @@ export default function AdminPreferencesPage() {
 							<CardHeader>
 								<CardTitle className="flex items-center gap-2">
 									<Plus className="w-5 h-5" />
-									Add New Category
+									{t("categories.addNewCategoryTitle")}
 								</CardTitle>
 								<CardDescription>
-									Create a new travel category
+									{t("categories.addNewCategoryDescription")}
 								</CardDescription>
 							</CardHeader>
 							<CardContent className="space-y-4">
 								<div className="space-y-2">
 									<Label htmlFor="new-category-name">
-										Category Name
+										{t("categories.categoryNameLabel")}
 									</Label>
 									<Input
 										id="new-category-name"
-										placeholder="e.g., Tropical Beaches"
+										placeholder={t(
+											"categories.categoryNamePlaceholder",
+										)}
 										value={newCategoryName}
 										onChange={(e) =>
 											setNewCategoryName(e.target.value)
@@ -470,12 +477,12 @@ export default function AdminPreferencesPage() {
 									{addingCategory ? (
 										<>
 											<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-											Adding...
+											{t("common.adding")}
 										</>
 									) : (
 										<>
 											<Plus className="w-4 h-4 mr-2" />
-											Add Category
+											{t("categories.addCategoryButton")}
 										</>
 									)}
 								</Button>
@@ -484,14 +491,18 @@ export default function AdminPreferencesPage() {
 
 						<Card className="lg:col-span-2">
 							<CardHeader>
-								<CardTitle>Categories List</CardTitle>
+								<CardTitle>
+									{t("categories.categoriesListTitle")}
+								</CardTitle>
 								<CardDescription>
-									Manage existing travel categories
+									{t("categories.categoriesListDescription")}
 								</CardDescription>
 								<div className="relative">
 									<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
 									<Input
-										placeholder="Search categories..."
+										placeholder={t(
+											"categories.searchCategoriesPlaceholder",
+										)}
 										value={categoriesSearch}
 										onChange={(e) =>
 											setCategoriesSearch(e.target.value)
@@ -504,13 +515,15 @@ export default function AdminPreferencesPage() {
 								{categoriesLoading ? (
 									<div className="flex items-center justify-center py-8">
 										<Loader2 className="h-6 w-6 animate-spin mr-2" />
-										<span>Loading categories...</span>
+										<span>
+											{t("categories.loadingCategories")}
+										</span>
 									</div>
 								) : categories.length === 0 ? (
 									<div className="text-center py-8">
 										<FolderOpen className="w-12 h-12 mx-auto text-muted-foreground opacity-50 mb-4" />
 										<p className="text-muted-foreground">
-											No categories found
+											{t("categories.noCategoriesFound")}
 										</p>
 									</div>
 								) : (
@@ -534,7 +547,9 @@ export default function AdminPreferencesPage() {
 																			.value,
 																	)
 																}
-																placeholder="Category name"
+																placeholder={t(
+																	"categories.categoryNamePlaceholder",
+																)}
 															/>
 															<div className="flex gap-2">
 																<Button
@@ -544,7 +559,9 @@ export default function AdminPreferencesPage() {
 																	}
 																>
 																	<Save className="w-4 h-4 mr-1" />
-																	Save
+																	{t(
+																		"common.save",
+																	)}
 																</Button>
 																<Button
 																	variant="outline"
@@ -556,7 +573,9 @@ export default function AdminPreferencesPage() {
 																	}
 																>
 																	<X className="w-4 h-4 mr-1" />
-																	Cancel
+																	{t(
+																		"common.cancel",
+																	)}
 																</Button>
 															</div>
 														</div>
@@ -613,10 +632,16 @@ export default function AdminPreferencesPage() {
 													{categoriesLoadingMore ? (
 														<>
 															<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-															Loading...
+															{t(
+																"common.loading",
+															)}
 														</>
 													) : (
-														`Load More (${categories.length} of ${categoriesTotalCount})`
+														t("common.loadMore", {
+															current:
+																categories.length,
+															total: categoriesTotalCount,
+														})
 													)}
 												</Button>
 											</div>
@@ -634,20 +659,22 @@ export default function AdminPreferencesPage() {
 							<CardHeader>
 								<CardTitle className="flex items-center gap-2">
 									<Plus className="w-5 h-5" />
-									Add New Tag
+									{t("tags.addNewTagTitle")}
 								</CardTitle>
 								<CardDescription>
-									Create a new travel tag
+									{t("tags.addNewTagDescription")}
 								</CardDescription>
 							</CardHeader>
 							<CardContent className="space-y-4">
 								<div className="space-y-2">
 									<Label htmlFor="new-tag-name">
-										Tag Name
+										{t("tags.tagNameLabel")}
 									</Label>
 									<Input
 										id="new-tag-name"
-										placeholder="e.g., Adventure Sports"
+										placeholder={t(
+											"tags.tagNamePlaceholder",
+										)}
 										value={newTagName}
 										onChange={(e) =>
 											setNewTagName(e.target.value)
@@ -662,12 +689,12 @@ export default function AdminPreferencesPage() {
 									{addingTag ? (
 										<>
 											<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-											Adding...
+											{t("common.adding")}
 										</>
 									) : (
 										<>
 											<Plus className="w-4 h-4 mr-2" />
-											Add Tag
+											{t("tags.addTagButton")}
 										</>
 									)}
 								</Button>
@@ -676,14 +703,16 @@ export default function AdminPreferencesPage() {
 
 						<Card className="lg:col-span-2">
 							<CardHeader>
-								<CardTitle>Tags List</CardTitle>
+								<CardTitle>{t("tags.tagsListTitle")}</CardTitle>
 								<CardDescription>
-									Manage existing travel tags
+									{t("tags.tagsListDescription")}
 								</CardDescription>
 								<div className="relative">
 									<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
 									<Input
-										placeholder="Search tags..."
+										placeholder={t(
+											"tags.searchTagsPlaceholder",
+										)}
 										value={tagsSearch}
 										onChange={(e) =>
 											setTagsSearch(e.target.value)
@@ -696,13 +725,13 @@ export default function AdminPreferencesPage() {
 								{tagsLoading ? (
 									<div className="flex items-center justify-center py-8">
 										<Loader2 className="h-6 w-6 animate-spin mr-2" />
-										<span>Loading tags...</span>
+										<span>{t("tags.loadingTags")}</span>
 									</div>
 								) : tags.length === 0 ? (
 									<div className="text-center py-8">
 										<Tag className="w-12 h-12 mx-auto text-muted-foreground opacity-50 mb-4" />
 										<p className="text-muted-foreground">
-											No tags found
+											{t("tags.noTagsFound")}
 										</p>
 									</div>
 								) : (
@@ -725,7 +754,9 @@ export default function AdminPreferencesPage() {
 																			.value,
 																	)
 																}
-																placeholder="Tag name"
+																placeholder={t(
+																	"tags.tagNamePlaceholder",
+																)}
 															/>
 															<div className="flex gap-2">
 																<Button
@@ -735,7 +766,9 @@ export default function AdminPreferencesPage() {
 																	}
 																>
 																	<Save className="w-4 h-4 mr-1" />
-																	Save
+																	{t(
+																		"common.save",
+																	)}
 																</Button>
 																<Button
 																	variant="outline"
@@ -747,7 +780,9 @@ export default function AdminPreferencesPage() {
 																	}
 																>
 																	<X className="w-4 h-4 mr-1" />
-																	Cancel
+																	{t(
+																		"common.cancel",
+																	)}
 																</Button>
 															</div>
 														</div>
@@ -800,10 +835,16 @@ export default function AdminPreferencesPage() {
 													{tagsLoadingMore ? (
 														<>
 															<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-															Loading...
+															{t(
+																"common.loading",
+															)}
 														</>
 													) : (
-														`Load More (${tags.length} of ${tagsTotalCount})`
+														t("common.loadMore", {
+															current:
+																tags.length,
+															total: tagsTotalCount,
+														})
 													)}
 												</Button>
 											</div>

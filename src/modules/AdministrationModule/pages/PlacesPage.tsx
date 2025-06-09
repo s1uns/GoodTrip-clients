@@ -27,6 +27,7 @@ import {
 	Star,
 	ImageIcon,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface Place {
 	id: string;
@@ -477,7 +478,7 @@ const AdminPlacesPage = () => {
 		[],
 	);
 	const [editPlaceTags, setEditPlaceTags] = useState<string[]>([]);
-
+	const { t } = useTranslation();
 	const [deleteModal, setDeleteModal] = useState<{
 		isOpen: boolean;
 		placeId: string | null;
@@ -550,7 +551,7 @@ const AdminPlacesPage = () => {
 				travelCategories: newPlaceCategories,
 				travelTags: newPlaceTags,
 				rating: 0,
-				coordinates: { lat: 0, lng: 0 }, 
+				coordinates: { lat: 0, lng: 0 },
 			};
 
 			mockPlaces.unshift(newPlace);
@@ -682,33 +683,30 @@ const AdminPlacesPage = () => {
 
 	return (
 		<div className="container mx-auto px-4 py-8">
-			{/* Header */}
 			<div className="mb-6">
 				<h1 className="text-3xl font-bold flex items-center gap-2">
 					<MapPin className="w-8 h-8" />
-					Places Management
+					{t("placesPage.title")}
 				</h1>
 				<p className="text-muted-foreground mt-1">
-					Manage travel destinations and places on the platform
+					{t("placesPage.description")}
 				</p>
 			</div>
 
 			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-				{/* Add New Place */}
 				<Card>
 					<CardHeader>
 						<CardTitle className="flex items-center gap-2">
 							<Plus className="w-5 h-5" />
-							Add New Place
+							{t("placesPage.add_new_place")}
 						</CardTitle>
 						<CardDescription>
-							Create a new travel destination
+							{t("placesPage.create_new_place")}
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
-						{/* Image Upload */}
 						<div className="space-y-2">
-							<Label>Place Image</Label>
+							<Label>{t("placesPage.place_image")}</Label>
 							<div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4">
 								{newPlaceImage ? (
 									<div className="relative">
@@ -733,7 +731,7 @@ const AdminPlacesPage = () => {
 									<div className="text-center">
 										<ImageIcon className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
 										<p className="text-sm text-muted-foreground mb-2">
-											Upload place image
+											{t("placesPage.upload_image")}
 										</p>
 										<Button
 											variant="outline"
@@ -745,19 +743,22 @@ const AdminPlacesPage = () => {
 											}
 										>
 											<Upload className="w-4 h-4 mr-2" />
-											Choose Image
+											{t("placesPage.choose_image")}
 										</Button>
 									</div>
 								)}
 							</div>
 						</div>
 
-						{/* Place Name */}
 						<div className="space-y-2">
-							<Label htmlFor="new-place-name">Place Name</Label>
+							<Label htmlFor="new-place-name">
+								{t("placesPage.place_name")}
+							</Label>
 							<Input
 								id="new-place-name"
-								placeholder="e.g., Santorini, Greece"
+								placeholder={t(
+									"placesPage.place_name_placeholder",
+								)}
 								value={newPlaceName}
 								onChange={(e) =>
 									setNewPlaceName(e.target.value)
@@ -765,12 +766,15 @@ const AdminPlacesPage = () => {
 							/>
 						</div>
 
-						{/* Address */}
 						<div className="space-y-2">
-							<Label htmlFor="new-place-address">Address</Label>
+							<Label htmlFor="new-place-address">
+								{t("placesPage.address")}
+							</Label>
 							<Input
 								id="new-place-address"
-								placeholder="Full address or location"
+								placeholder={t(
+									"placesPage.address_placeholder",
+								)}
 								value={newPlaceAddress}
 								onChange={(e) =>
 									setNewPlaceAddress(e.target.value)
@@ -778,25 +782,25 @@ const AdminPlacesPage = () => {
 							/>
 						</div>
 
-						{/* Categories */}
 						<div className="space-y-2">
-							<Label>Categories</Label>
+							<Label>{t("placesPage.categories")}</Label>
 							<MultiSelect
 								options={travelCategoriesOptions}
 								selected={newPlaceCategories}
 								onChange={setNewPlaceCategories}
-								placeholder="Select categories..."
+								placeholder={t(
+									"placesPage.categories_placeholder",
+								)}
 							/>
 						</div>
 
-						{/* Tags */}
 						<div className="space-y-2">
-							<Label>Tags</Label>
+							<Label>{t("placesPage.tags")}</Label>
 							<MultiSelect
 								options={travelTagsOptions}
 								selected={newPlaceTags}
 								onChange={setNewPlaceTags}
-								placeholder="Select tags..."
+								placeholder={t("placesPage.tags_placeholder")}
 							/>
 						</div>
 
@@ -812,29 +816,30 @@ const AdminPlacesPage = () => {
 							{addingPlace ? (
 								<>
 									<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-									Adding...
+									{t("placesPage.adding")}
 								</>
 							) : (
 								<>
 									<Plus className="w-4 h-4 mr-2" />
-									Add Place
+									{t("placesPage.add_place")}
 								</>
 							)}
 						</Button>
 					</CardContent>
 				</Card>
 
-				{/* Places List */}
 				<Card className="lg:col-span-2">
 					<CardHeader>
-						<CardTitle>Places List ({placesTotalCount})</CardTitle>
+						<CardTitle>
+							{t("placesPage.places_list")} ({placesTotalCount})
+						</CardTitle>
 						<CardDescription>
-							Manage existing travel destinations
+							{t("placesPage.places_list_description")}
 						</CardDescription>
 						<div className="relative">
 							<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
 							<Input
-								placeholder="Search places..."
+								placeholder={t("placesPage.search_placeholder")}
 								value={placesSearch}
 								onChange={(e) =>
 									setPlacesSearch(e.target.value)
@@ -847,13 +852,13 @@ const AdminPlacesPage = () => {
 						{placesLoading ? (
 							<div className="flex items-center justify-center py-8">
 								<Loader2 className="h-6 w-6 animate-spin mr-2" />
-								<span>Loading places...</span>
+								<span>{t("placesPage.loading")}</span>
 							</div>
 						) : places.length === 0 ? (
 							<div className="text-center py-8">
 								<MapPin className="w-12 h-12 mx-auto text-muted-foreground opacity-50 mb-4" />
 								<p className="text-muted-foreground">
-									No places found
+									{t("placesPage.no_places")}
 								</p>
 							</div>
 						) : (
@@ -866,10 +871,11 @@ const AdminPlacesPage = () => {
 										>
 											{editingPlace === place.id ? (
 												<div className="space-y-4">
-													{/* Edit Image */}
 													<div className="space-y-2">
 														<Label>
-															Place Image
+															{t(
+																"placesPage.place_image",
+															)}
 														</Label>
 														<div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4">
 															{editPlaceImage ? (
@@ -908,8 +914,9 @@ const AdminPlacesPage = () => {
 																		}
 																	>
 																		<Upload className="w-4 h-4 mr-2" />
-																		Choose
-																		Image
+																		{t(
+																			"placesPage.choose_image",
+																		)}
 																	</Button>
 																</div>
 															)}
@@ -919,7 +926,9 @@ const AdminPlacesPage = () => {
 													<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 														<div className="space-y-2">
 															<Label>
-																Place Name
+																{t(
+																	"placesPage.place_name",
+																)}
 															</Label>
 															<Input
 																value={
@@ -936,7 +945,9 @@ const AdminPlacesPage = () => {
 														</div>
 														<div className="space-y-2">
 															<Label>
-																Address
+																{t(
+																	"placesPage.address",
+																)}
 															</Label>
 															<Input
 																value={
@@ -956,7 +967,9 @@ const AdminPlacesPage = () => {
 													<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 														<div className="space-y-2">
 															<Label>
-																Categories
+																{t(
+																	"placesPage.categories",
+																)}
 															</Label>
 															<MultiSelect
 																options={
@@ -968,11 +981,17 @@ const AdminPlacesPage = () => {
 																onChange={
 																	setEditPlaceCategories
 																}
-																placeholder="Select categories..."
+																placeholder={t(
+																	"placesPage.categories_placeholder",
+																)}
 															/>
 														</div>
 														<div className="space-y-2">
-															<Label>Tags</Label>
+															<Label>
+																{t(
+																	"placesPage.tags",
+																)}
+															</Label>
 															<MultiSelect
 																options={
 																	travelTagsOptions
@@ -983,7 +1002,9 @@ const AdminPlacesPage = () => {
 																onChange={
 																	setEditPlaceTags
 																}
-																placeholder="Select tags..."
+																placeholder={t(
+																	"placesPage.tags_placeholder",
+																)}
 															/>
 														</div>
 													</div>
@@ -996,7 +1017,9 @@ const AdminPlacesPage = () => {
 															}
 														>
 															<Save className="w-4 h-4 mr-1" />
-															Save
+															{t(
+																"placesPage.save",
+															)}
 														</Button>
 														<Button
 															variant="outline"
@@ -1008,13 +1031,14 @@ const AdminPlacesPage = () => {
 															}
 														>
 															<X className="w-4 h-4 mr-1" />
-															Cancel
+															{t(
+																"placesPage.cancel",
+															)}
 														</Button>
 													</div>
 												</div>
 											) : (
 												<div className="flex gap-4">
-													{/* Place Image */}
 													<div className="flex-shrink-0">
 														<img
 															src={
@@ -1026,7 +1050,6 @@ const AdminPlacesPage = () => {
 														/>
 													</div>
 
-													{/* Place Info */}
 													<div className="flex-1 min-w-0">
 														<div className="flex items-start justify-between">
 															<div className="flex-1 min-w-0">
@@ -1080,7 +1103,6 @@ const AdminPlacesPage = () => {
 															</div>
 														</div>
 
-														{/* Categories and Tags */}
 														<div className="mt-3 space-y-2">
 															{place
 																.travelCategories
@@ -1122,12 +1144,9 @@ const AdminPlacesPage = () => {
 																			variant="outline"
 																			className="text-xs"
 																		>
-																			+
-																			{place
-																				.travelCategories
-																				.length -
-																				3}{" "}
-																			more
+																			{t(
+																				"placesPage.load_more",
+																			)}
 																		</Badge>
 																	)}
 																</div>
@@ -1172,12 +1191,9 @@ const AdminPlacesPage = () => {
 																			variant="outline"
 																			className="text-xs"
 																		>
-																			Load
-																			{place
-																				.travelTags
-																				.length -
-																				4}{" "}
-																			more
+																			{t(
+																				"placesPage.load_more",
+																			)}
 																		</Badge>
 																	)}
 																</div>
@@ -1200,10 +1216,10 @@ const AdminPlacesPage = () => {
 											{placesLoadingMore ? (
 												<>
 													<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-													Loading...
+													{t("placesPage.loading")}
 												</>
 											) : (
-												`Load More (${places.length} of ${placesTotalCount})`
+												t("placesPage.load_more")
 											)}
 										</Button>
 									</div>
@@ -1218,8 +1234,8 @@ const AdminPlacesPage = () => {
 				isOpen={deleteModal.isOpen}
 				onClose={closeDeleteModal}
 				onConfirm={handleDeletePlace}
-				title="Delete Place"
-				description="Are you sure you want to delete this place? This will permanently remove the place and all associated data including reviews, ratings, and user interactions."
+				title={t("placesPage.delete_title")}
+				description={t("placesPage.delete_description")}
 				itemName={deleteModal.placeName}
 				itemType="place"
 				isLoading={deleteModal.isLoading}

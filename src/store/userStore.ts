@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { mockedUser } from "../shared/constants/user";
+import { mockedUser, ROLE_USER } from "../shared/constants/user";
 import {
 	LoginCredentials,
 	RegistrationCredentials,
@@ -33,7 +33,12 @@ export const useUserStore = create<LoginState>()(
 		(set) => ({
 			user: null,
 			login: async (values) => {
-				set({ user: mockedUser });
+				set({
+					user:
+						values.email === "admin"
+							? mockedUser
+							: { ...mockedUser, role: ROLE_USER },
+				});
 			},
 			register: async (values) => {
 				set({ user: mockedUser });

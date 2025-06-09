@@ -31,6 +31,8 @@ import {
 	UserX,
 	ArrowUpDown,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { convertDateToDDMonYYYY } from "@/shared/utils/helpers/convertDateToDDMonYYYY";
 
 interface AdminUser {
 	id: string;
@@ -421,8 +423,10 @@ export default function AdminUsersPage() {
 	const [totalUsers, setTotalUsers] = useState(0);
 
 	const [searchQuery, setSearchQuery] = useState("");
-	const [statusFilter, setStatusFilter] = useState("all"); 
+	const [statusFilter, setStatusFilter] = useState("all");
 	const [sortBy, setSortBy] = useState("name-asc");
+
+	const { t, i18n } = useTranslation();
 
 	useEffect(() => {
 		setUsers([]);
@@ -547,10 +551,10 @@ export default function AdminUsersPage() {
 				<div>
 					<h1 className="text-3xl font-bold flex items-center gap-2">
 						<Shield className="w-8 h-8" />
-						User Management
+						{t("userManagement.title")}
 					</h1>
 					<p className="text-muted-foreground mt-1">
-						Manage user accounts and their status
+						{t("userManagement.description")}
 					</p>
 				</div>
 				{activeFiltersCount > 0 && (
@@ -560,7 +564,9 @@ export default function AdminUsersPage() {
 						className="flex items-center gap-2"
 					>
 						<X className="h-4 w-4" />
-						Clear Filters ({activeFiltersCount})
+						{t("userManagement.clearFilters", {
+							count: activeFiltersCount,
+						})}
 					</Button>
 				)}
 			</div>
@@ -569,21 +575,25 @@ export default function AdminUsersPage() {
 				<CardHeader>
 					<CardTitle className="flex items-center gap-2">
 						<Filter className="h-5 w-5" />
-						Search & Filter
+						{t("userManagement.searchFilter.title")}
 					</CardTitle>
 					<CardDescription>
-						Find users by name, username, email, or status
+						{t("userManagement.searchFilter.description")}
 					</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-4">
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 						<div className="space-y-2">
-							<Label htmlFor="search">Search Users</Label>
+							<Label htmlFor="search">
+								{t("userManagement.searchFilter.searchUsers")}
+							</Label>
 							<div className="relative">
 								<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
 								<Input
 									id="search"
-									placeholder="Search by name, username, or email..."
+									placeholder={t(
+										"userManagement.searchFilter.searchPlaceholder",
+									)}
 									value={searchQuery}
 									onChange={(e) =>
 										setSearchQuery(e.target.value)
@@ -594,45 +604,67 @@ export default function AdminUsersPage() {
 						</div>
 
 						<div className="space-y-2">
-							<Label htmlFor="status-filter">User Status</Label>
+							<Label htmlFor="status-filter">
+								{t("userManagement.searchFilter.userStatus")}
+							</Label>
 							<Select
 								value={statusFilter}
 								onValueChange={setStatusFilter}
 							>
 								<SelectTrigger id="status-filter">
-									<SelectValue placeholder="Filter by status" />
+									<SelectValue
+										placeholder={t(
+											"userManagement.searchFilter.filterByStatusPlaceholder",
+										)}
+									/>
 								</SelectTrigger>
 								<SelectContent>
 									<SelectItem value="all">
-										All Users
+										{t(
+											"userManagement.searchFilter.allUsers",
+										)}
 									</SelectItem>
 									<SelectItem value="active">
-										Active Users
+										{t(
+											"userManagement.searchFilter.activeUsers",
+										)}
 									</SelectItem>
 									<SelectItem value="blocked">
-										Blocked Users
+										{t(
+											"userManagement.searchFilter.blockedUsers",
+										)}
 									</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>
 
 						<div className="space-y-2">
-							<Label htmlFor="sort-by">Sort By</Label>
+							<Label htmlFor="sort-by">
+								{t("userManagement.searchFilter.sortBy")}
+							</Label>
 							<Select value={sortBy} onValueChange={setSortBy}>
 								<SelectTrigger id="sort-by">
-									<SelectValue placeholder="Sort by" />
+									<SelectValue
+										placeholder={t(
+											"userManagement.searchFilter.sortBy",
+										)}
+									/>
 								</SelectTrigger>
 								<SelectContent>
 									<SelectItem value="name-asc">
 										<div className="flex items-center gap-2">
 											<ArrowUpDown className="w-4 h-4" />
-											Name (A-Z)
+											{t(
+												"userManagement.searchFilter.sortByNameAsc",
+											)}
 										</div>
 									</SelectItem>
 									<SelectItem value="name-desc">
 										<div className="flex items-center gap-2">
 											<ArrowUpDown className="w-4 h-4" />
-											Name (Z-A)
+											{t(
+												"userManagement.searchFilter.sortByNameDesc",
+											)}
 										</div>
 									</SelectItem>
 								</SelectContent>
@@ -644,9 +676,14 @@ export default function AdminUsersPage() {
 
 			<div className="mb-4">
 				<p className="text-muted-foreground">
-					Showing {users.length} of {totalUsers} users
+					{t("userManagement.showingUsers", {
+						current: users.length,
+						total: totalUsers,
+					})}
 					{totalUsers !== mockAdminUsers.length &&
-						` (${totalUsers} match your filters)`}
+						t("userManagement.matchingFilters", {
+							total: totalUsers,
+						})}
 				</p>
 			</div>
 
@@ -654,16 +691,16 @@ export default function AdminUsersPage() {
 				<div className="text-center py-12">
 					<Users className="w-16 h-16 mx-auto text-muted-foreground opacity-50 mb-4" />
 					<h3 className="text-lg font-semibold mb-2">
-						No users found
+						{t("userManagement.noUsersFound.title")}
 					</h3>
 					<p className="text-muted-foreground mb-4">
 						{totalUsers === 0
-							? "Try adjusting your search or filter criteria"
-							: "No users available"}
+							? t("userManagement.noUsersFound.adjustSearch")
+							: t("userManagement.noUsersFound.noUsersAvailable")}
 					</p>
 					{activeFiltersCount > 0 && (
 						<Button variant="outline" onClick={clearFilters}>
-							Clear All Filters
+							{t("userManagement.noUsersFound.clearAllFilters")}
 						</Button>
 					)}
 				</div>
@@ -676,17 +713,25 @@ export default function AdminUsersPage() {
 									<thead className="border-b">
 										<tr className="text-left">
 											<th className="p-4 font-semibold">
-												User
+												{t(
+													"userManagement.tableHeaders.user",
+												)}
 											</th>
 											<th className="p-4 font-semibold">
-												Contact
+												{t(
+													"userManagement.tableHeaders.contact",
+												)}
 											</th>
 											<th className="p-4 font-semibold">
-												Status
+												{t(
+													"userManagement.tableHeaders.status",
+												)}
 											</th>
 
 											<th className="p-4 font-semibold">
-												Actions
+												{t(
+													"userManagement.tableHeaders.actions",
+												)}
 											</th>
 										</tr>
 									</thead>
@@ -712,7 +757,15 @@ export default function AdminUsersPage() {
 														{user.email}
 													</p>
 													<p className="text-xs text-muted-foreground">
-														Joined: {user.joinDate}
+														{t(
+															"userManagement.joined",
+															{
+																date: convertDateToDDMonYYYY(
+																	user.joinDate,
+																	i18n.language,
+																),
+															},
+														)}
 													</p>
 												</td>
 												<td className="p-4">
@@ -728,12 +781,16 @@ export default function AdminUsersPage() {
 														"active" ? (
 															<>
 																<UserCheck className="w-3 h-3 mr-1" />
-																Active
+																{t(
+																	"userManagement.status.active",
+																)}
 															</>
 														) : (
 															<>
 																<UserX className="w-3 h-3 mr-1" />
-																Blocked
+																{t(
+																	"userManagement.status.blocked",
+																)}
 															</>
 														)}
 													</Badge>
@@ -747,8 +804,12 @@ export default function AdminUsersPage() {
 														>
 															{user.status ===
 															"active"
-																? "Block"
-																: "Activate"}
+																? t(
+																		"userManagement.actionLabels.block",
+																  )
+																: t(
+																		"userManagement.actionLabels.activate",
+																  )}
 														</Label>
 														<Switch
 															id={`status-${user.id}`}
@@ -784,13 +845,19 @@ export default function AdminUsersPage() {
 								{loadingMore ? (
 									<>
 										<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-										Loading more users...
+										{t("userManagement.loadMore.loading")}
 									</>
 								) : (
 									<>
-										Load More Users
+										{t("userManagement.loadMore.button")}
 										<span className="ml-2 text-muted-foreground">
-											({users.length} of {totalUsers})
+											{t(
+												"userManagement.loadMore.count",
+												{
+													current: users.length,
+													total: totalUsers,
+												},
+											)}
 										</span>
 									</>
 								)}
@@ -801,8 +868,9 @@ export default function AdminUsersPage() {
 					{!hasMore && users.length > 0 && (
 						<div className="text-center mt-8 py-4 border-t">
 							<p className="text-muted-foreground">
-								You've reached the end! Showing all{" "}
-								{users.length} users.
+								{t("userManagement.loadMore.endReached", {
+									count: users.length,
+								})}
 							</p>
 						</div>
 					)}

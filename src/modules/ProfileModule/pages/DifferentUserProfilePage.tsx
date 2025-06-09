@@ -15,6 +15,8 @@ import { Star, Users, FileText, Share2, UserPlus } from "lucide-react";
 import { formatNumber } from "@/shared/utils/helpers/formatNumber";
 import { Separator } from "@/components/ui/separator";
 import { useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { convertDateToDDMonYYYY } from "@/shared/utils/helpers/convertDateToDDMonYYYY";
 
 const mockUsers = {
 	"1": {
@@ -141,6 +143,7 @@ const travelCategoriesOptions = [
 
 export default function DifferentUserProfilePage() {
 	const { userId } = useParams<{ userId: string }>();
+	const { t, i18n } = useTranslation();
 
 	const [user, setUser] = useState<any>(null);
 	const [loading, setLoading] = useState(true);
@@ -171,7 +174,7 @@ export default function DifferentUserProfilePage() {
 
 	const handleShare = () => {
 		navigator.clipboard.writeText(window.location.href);
-		alert("Profile link copied to clipboard!");
+		alert(t("userProfilePage.profileLinkCopied"));
 	};
 
 	if (loading) {
@@ -181,7 +184,7 @@ export default function DifferentUserProfilePage() {
 					<div className="text-center">
 						<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
 						<p className="text-muted-foreground">
-							Loading user profile...
+							{t("userProfilePage.loadingProfile")}
 						</p>
 					</div>
 				</div>
@@ -193,17 +196,18 @@ export default function DifferentUserProfilePage() {
 		return (
 			<div className="container mx-auto px-4 py-8">
 				<div className="text-center">
-					<h1 className="text-2xl font-bold mb-4">User Not Found</h1>
+					<h1 className="text-2xl font-bold mb-4">
+						{t("userProfilePage.userNotFoundTitle")}
+					</h1>
 					<p className="text-muted-foreground">
-						The user you're looking for doesn't exist or has been
-						removed.
+						{t("userProfilePage.userNotFoundDescription")}
 					</p>
 					<Button
 						variant="outline"
 						className="mt-4"
 						onClick={() => window.history.back()}
 					>
-						Go Back
+						{t("userProfilePage.goBack")}
 					</Button>
 				</div>
 			</div>
@@ -232,7 +236,9 @@ export default function DifferentUserProfilePage() {
 									className="cursor-pointer"
 								>
 									<UserPlus className="w-4 h-4 mr-2" />
-									{isFollowing ? "Following" : "Follow"}
+									{isFollowing
+										? t("userProfilePage.followingButton")
+										: t("userProfilePage.followButton")}
 								</Button>
 
 								<Button
@@ -252,9 +258,11 @@ export default function DifferentUserProfilePage() {
 			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 				<Card className="lg:col-span-1 h-1/2">
 					<CardHeader>
-						<CardTitle>Connections</CardTitle>
+						<CardTitle>
+							{t("userProfilePage.connectionsTitle")}
+						</CardTitle>
 						<CardDescription>
-							Followers and subscriptions
+							{t("userProfilePage.connectionsDescription")}
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
@@ -265,7 +273,7 @@ export default function DifferentUserProfilePage() {
 									{formatNumber(user.stats.followers)}
 								</div>
 								<div className="text-sm text-muted-foreground">
-									Followers
+									{t("userProfilePage.followers")}
 								</div>
 							</div>
 							<div className="text-center p-4 border rounded-lg">
@@ -274,7 +282,7 @@ export default function DifferentUserProfilePage() {
 									{formatNumber(user.stats.following)}
 								</div>
 								<div className="text-sm text-muted-foreground">
-									Following
+									{t("userProfilePage.following")}
 								</div>
 							</div>
 						</div>
@@ -283,17 +291,28 @@ export default function DifferentUserProfilePage() {
 
 				<Card className="lg:col-span-2">
 					<CardHeader>
-						<CardTitle>Profile Information</CardTitle>
+						<CardTitle>
+							{t("userProfilePage.profileInformationTitle")}
+						</CardTitle>
 						<CardDescription>
-							About {user.firstName}{" "}
+							{t("common.about")} {user.firstName}{" "}
 							<span className="text-muted-foreground">
-								(Joined on {user.joinDate})
+								(
+								{t("userProfilePage.joinedOn", {
+									date: convertDateToDDMonYYYY(
+										user.joinDate,
+										i18n.language,
+									),
+								})}
+								)
 							</span>
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-6">
 						<div className="space-y-2">
-							<h3 className="text-lg font-semibold">Bio</h3>
+							<h3 className="text-lg font-semibold">
+								{t("userProfilePage.bioTitle")}
+							</h3>
 							<p className="text-muted-foreground">{user.bio}</p>
 						</div>
 
@@ -301,12 +320,14 @@ export default function DifferentUserProfilePage() {
 
 						<div className="space-y-4">
 							<h3 className="text-lg font-semibold">
-								Travel Preferences
+								{t("userProfilePage.travelPreferencesTitle")}
 							</h3>
 							<div className="space-y-4">
 								<div className="space-y-2">
 									<h4 className="text-sm font-medium">
-										Travel Categories
+										{t(
+											"userProfilePage.travelCategoriesTitle",
+										)}
 									</h4>
 									<div className="flex flex-wrap gap-2">
 										{user.travelPreferences.map(
@@ -327,7 +348,7 @@ export default function DifferentUserProfilePage() {
 
 								<div className="space-y-2">
 									<h4 className="text-sm font-medium">
-										Travel Tags
+										{t("userProfilePage.travelTagsTitle")}
 									</h4>
 									<div className="flex flex-wrap gap-2">
 										{user.travelCategories.map(
@@ -352,12 +373,16 @@ export default function DifferentUserProfilePage() {
 						<div className="flex flex-wrap gap-4">
 							<div className="flex items-center">
 								<Star className="mr-2 h-5 w-5 text-muted-foreground" />
-								<span>{user.stats.rating} User Rating</span>
+								<span>
+									{user.stats.rating}{" "}
+									{t("userProfilePage.userRating")}
+								</span>
 							</div>
 							<div className="flex items-center">
 								<FileText className="mr-2 h-5 w-5 text-muted-foreground" />
 								<span>
-									{user.stats.reviewsWritten} Reviews Written
+									{user.stats.reviewsWritten}{" "}
+									{t("userProfilePage.reviewsWritten")}
 								</span>
 							</div>
 						</div>

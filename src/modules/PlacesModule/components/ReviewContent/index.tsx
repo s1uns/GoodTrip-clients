@@ -1,4 +1,4 @@
-import React, { memo, useCallback, Dispatch, SetStateAction } from "react";
+import React, { memo, useCallback, Dispatch, SetStateAction, ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +13,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "swiper/css/zoom";
+import { useTranslation } from "react-i18next";
 
 interface ReviewContentProps {
 	text: string;
@@ -44,8 +45,10 @@ const ReviewContent = memo<ReviewContentProps>(
 		setEditingReview,
 		openImageModal,
 	}) => {
+		const { t } = useTranslation();
+
 		const handleAddImageToReview = useCallback(
-			(e: React.ChangeEvent<HTMLInputElement>) => {
+			(e: ChangeEvent<HTMLInputElement>) => {
 				const files = e.target.files;
 				if (files) {
 					const newImages: string[] = [];
@@ -79,7 +82,9 @@ const ReviewContent = memo<ReviewContentProps>(
 		return isEditing ? (
 			<div className="space-y-4">
 				<div>
-					<Label htmlFor="edit-rating">Rating</Label>
+					<Label htmlFor="edit-rating">
+						{t("reviewContent.ratingLabel")}
+					</Label>
 					<Stars
 						rating={editRating}
 						interactive
@@ -91,16 +96,18 @@ const ReviewContent = memo<ReviewContentProps>(
 					value={editText}
 					onChange={(e) => setEditText(e.target.value)}
 					rows={3}
-					placeholder="Edit your review here..."
+					placeholder={t("reviewContent.editReviewPlaceholder")}
 				/>
 				<div>
-					<Label>Images</Label>
+					<Label>{t("reviewContent.imagesLabel")}</Label>
 					<div className="flex flex-wrap gap-2 mt-2">
 						{editImages.map((image, index) => (
 							<div key={index} className="relative">
 								<img
-									src={image}
-									alt={`Review image ${index + 1}`}
+									src={image || emptyPic}
+									alt={t("reviewContent.reviewImageAlt", {
+										number: index + 1,
+									})}
 									className="w-20 h-20 object-cover rounded"
 								/>
 								<Button
@@ -135,14 +142,14 @@ const ReviewContent = memo<ReviewContentProps>(
 				</div>
 				<div className="flex gap-2">
 					<Button size="sm" onClick={handleEditReview}>
-						Save
+						{t("reviewContent.saveButton")}
 					</Button>
 					<Button
 						variant="outline"
 						size="sm"
 						onClick={() => setEditingReview(null)}
 					>
-						Cancel
+						{t("reviewContent.cancelButton")}
 					</Button>
 				</div>
 			</div>
@@ -164,7 +171,12 @@ const ReviewContent = memo<ReviewContentProps>(
 									<div className="swiper-zoom-container">
 										<img
 											src={image || emptyPic}
-											alt={`Review image ${index + 1}`}
+											alt={t(
+												"reviewContent.reviewImageAlt",
+												{
+													number: index + 1,
+												},
+											)}
 											className="w-full h-full object-cover cursor-pointer"
 											onClick={() =>
 												openImageModal(image)
