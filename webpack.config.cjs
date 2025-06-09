@@ -1,5 +1,6 @@
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
+const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 
 module.exports = {
 	mode: "development",
@@ -9,6 +10,7 @@ module.exports = {
 		filename: "bundle.js",
 		path: path.resolve(__dirname, "dist"),
 		assetModuleFilename: "images/[name][ext]",
+		publicPath: "/",
 	},
 	plugins: [
 		new HtmlWebpackPlugin({
@@ -18,6 +20,9 @@ module.exports = {
 	devServer: {
 		static: path.resolve(__dirname, "dist"),
 		port: 1337,
+		historyApiFallback: true,
+		hot: true,
+		open: true,
 	},
 	module: {
 		rules: [
@@ -47,5 +52,6 @@ module.exports = {
 	},
 	resolve: {
 		extensions: [".tsx", ".ts", ".jsx", ".js"],
+		plugins: [new TsconfigPathsPlugin()],
 	},
 };
