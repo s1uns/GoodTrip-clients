@@ -6,6 +6,7 @@ const localeMapper: Record<string, string> = {
 
 export const convertDateToDDMonYYYY = (dateString: string, locale: string) => {
 	const date = new Date(dateString);
+	const finalDate = isNaN(date.getTime()) ? new Date() : date;
 
 	const selectedLocale = localeMapper[locale] || "en-US";
 
@@ -15,5 +16,5 @@ export const convertDateToDDMonYYYY = (dateString: string, locale: string) => {
 		year: "numeric",
 	});
 
-	return formatter.format(date);
+	return formatter.format(finalDate);
 };

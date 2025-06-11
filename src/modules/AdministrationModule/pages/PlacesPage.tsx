@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import {
 	Card,
@@ -28,6 +26,7 @@ import {
 	ImageIcon,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import useDebounce from "@/shared/utils/hooks/useDebounce";
 
 interface Place {
 	id: string;
@@ -70,342 +69,132 @@ const travelTagsOptions = [
 const mockPlaces: Place[] = [
 	{
 		id: "1",
-		name: "Santorini, Greece",
-		address: "Santorini, Cyclades, Greece",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["tropical-beaches", "ancient-ruins"],
+		name: "VDNH (Exhibition Center of Ukraine)",
+		address: "Kyiv",
+		image: "https://upload.wikimedia.org/wikipedia/commons/0/07/%D0%9A%D0%BE%D0%BC%D0%BF%D0%BB%D0%B5%D0%BA%D1%81_%D0%95%D0%BA%D1%81%D0%BF%D0%BE%D1%86%D0%B5%D0%BD%D1%82%D1%80_%D0%A3%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D0%B8.jpg",
 		travelTags: [
-			"photography",
 			"relaxation-wellness",
-			"cultural-immersion",
+			"family-travel",
+			"events-festivals",
 		],
-		rating: 4.8,
-		coordinates: { lat: 36.3932, lng: 25.4615 },
+		travelCategories: ["parks", "cultural-centers"],
+		rating: 4.6,
+		coordinates: { lat: 50.3817, lng: 30.4772 },
 	},
 	{
 		id: "2",
-		name: "Machu Picchu, Peru",
-		address: "Aguas Calientes, Cusco Region, Peru",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["mountain-ranges", "ancient-ruins"],
-		travelTags: ["adventure-sports", "historical-sites", "photography"],
-		rating: 4.9,
-		coordinates: { lat: -13.1631, lng: -72.545 },
+		name: "Andriyivskyy Descent",
+		address: "Kyiv",
+		image: "https://destinations.ua/storage/crop/articles/slider_173_max.jpg",
+		travelTags: ["historical-sites", "cultural-immersion", "art-museums"],
+		travelCategories: ["ancient-streets", "architecture"],
+		rating: 4.8,
+		coordinates: { lat: 50.4594, lng: 30.5171 },
 	},
 	{
 		id: "3",
-		name: "Tokyo, Japan",
-		address: "Tokyo, Japan",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["metropolitan-cities"],
+		name: "Pyrohiv Museum",
+		address: "Kyiv",
+		image: "https://lh3.googleusercontent.com/gps-cs-s/AC9h4npCBjllcM0LKQtHuCNKm_sMgoj5mjqktWV_mhIExEDDJhCSmxOf_CxyyzhHLWRwAv-kLJkwgeLyqOftkGqva27MdDwfAG4EsHYUGD88Hf5WhURjr1tHxOH5HUwj5DFojvp4EiFx=s1360-w1360-h1020-rw",
+		travelTags: ["historical-sites", "photography", "nature-wildlife"],
+		travelCategories: ["open-air-museums", "parks"],
+		rating: 4.7,
+		coordinates: { lat: 50.3599, lng: 30.5152 },
+	},
+	{
+		id: "4",
+		name: "Natalka Park",
+		address: "Kyiv",
+		image: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1c/f8/e0/46/caption.jpg?w=900&h=500&s=1",
+		travelTags: ["nature-wildlife", "relaxation-wellness", "family-travel"],
+		travelCategories: ["parks"],
+		rating: 4.9,
+		coordinates: { lat: 50.4907, lng: 30.5401 },
+	},
+	{
+		id: "5",
+		name: "Lviv Old Town",
+		address: "Lviv",
+		image: "https://whc.unesco.org/uploads/thumbs/site_0865_0002-750-750-20151104125432.jpg",
 		travelTags: [
-			"food-cuisine",
+			"historical-sites",
 			"cultural-immersion",
-			"shopping-markets",
+			"architecture",
+			"food-cuisine",
+		],
+		travelCategories: ["metropolitan-cities", "ancient-ruins"],
+		rating: 4.9,
+		coordinates: { lat: 49.8419, lng: 24.0315 },
+	},
+	{
+		id: "6",
+		name: "Carpathian Mountains",
+		address: "Zakarpattia Oblast",
+		image: "https://lp-cms-production.imgix.net/2023-10/iStock-1657465139-RFC.jpg",
+		travelTags: [
+			"adventure-sports",
+			"nature-wildlife",
+			"photography",
+			"relaxation-wellness",
+		],
+		travelCategories: ["mountain-ranges", "rural-countryside"],
+		rating: 4.7,
+		coordinates: { lat: 48.2917, lng: 24.5967 },
+	},
+	{
+		id: "7",
+		name: "Odesa Opera and Ballet Theater",
+		address: "Odesa",
+		image: "https://lh3.googleusercontent.com/gps-cs-s/AC9h4npqBXvoPIb4BMqyXt56LOZiEL1XGqHC6bJr_ySHXMNgdDgB81EdEfO253D2kGwyQzMR4smmZewf6W9g5JaL9ccnCfJuYaJjmy8fDZZ7hM-i3KP0Go0lszeabhstG1xWSFyi3uRIMw=s1360-w1360-h1020-rw",
+		travelTags: [
+			"art-museums",
+			"cultural-immersion",
+			"architecture",
 			"nightlife-entertainment",
 		],
+		travelCategories: ["metropolitan-cities", "theaters"],
+		rating: 4.8,
+		coordinates: { lat: 46.4851, lng: 30.7408 },
+	},
+	{
+		id: "8",
+		name: "Kamianets-Podilskyi Castle",
+		address: "Kamianets-Podilskyi",
+		image: "https://lh3.googleusercontent.com/gps-cs-s/AC9h4npwahLQkdaWj4XrQ3PFKIVyGGJXnp0jOr3YFKH_KWKA5TKbXB4CMWHkX-dd9sK7HbqjPR-myFK_L2L1DHx6iVFPPy00dbPyEjit2ez8yOTLVE1mpp8o9s3IwhzMqq_zsZBoduW2=s1360-w1360-h1020-rw",
+		travelTags: [
+			"historical-sites",
+			"architecture",
+			"photography",
+			"cultural-immersion",
+		],
+		travelCategories: ["ancient-ruins", "castles"],
+		rating: 4.9,
+		coordinates: { lat: 48.675, lng: 26.585 },
+	},
+	{
+		id: "9",
+		name: "Chernivtsi National University",
+		address: "Chernivtsi",
+		image: "https://www.shutterstock.com/search/chernivtsi-national-university",
+		travelTags: [
+			"architecture",
+			"historical-sites",
+			"photography",
+			"cultural-immersion",
+		],
+		travelCategories: ["universities", "architectural-marvels"],
 		rating: 4.7,
-		coordinates: { lat: 35.6762, lng: 139.6503 },
+		coordinates: { lat: 48.2979, lng: 25.9366 },
 	},
 	{
-		id: "4",
-		name: "Serengeti National Park",
-		address: "Serengeti, Tanzania",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["national-parks"],
-		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
-		rating: 4.9,
-		coordinates: { lat: -2.3333, lng: 34.8333 },
-	},
-	{
-		id: "5",
-		name: "Maldives Resort",
-		address: "Maldives",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["private-islands", "tropical-beaches"],
-		travelTags: ["relaxation-wellness", "photography"],
+		id: "10",
+		name: "Sofiyivsky Park",
+		address: "Uman",
+		image: "https://cdn.tsunamipanel.com/100594/media/galleries/1920/sofievka-park-01.jpg",
+		travelTags: ["nature-wildlife", "relaxation-wellness", "photography"],
+		travelCategories: ["parks", "botanical-gardens"],
 		rating: 4.8,
-		coordinates: { lat: 3.2028, lng: 73.2207 },
-	},
-	{
-		id: "4",
-		name: "Serengeti National Park",
-		address: "Serengeti, Tanzania",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["national-parks"],
-		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
-		rating: 4.9,
-		coordinates: { lat: -2.3333, lng: 34.8333 },
-	},
-	{
-		id: "5",
-		name: "Maldives Resort",
-		address: "Maldives",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["private-islands", "tropical-beaches"],
-		travelTags: ["relaxation-wellness", "photography"],
-		rating: 4.8,
-		coordinates: { lat: 3.2028, lng: 73.2207 },
-	},
-	{
-		id: "4",
-		name: "Serengeti National Park",
-		address: "Serengeti, Tanzania",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["national-parks"],
-		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
-		rating: 4.9,
-		coordinates: { lat: -2.3333, lng: 34.8333 },
-	},
-	{
-		id: "5",
-		name: "Maldives Resort",
-		address: "Maldives",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["private-islands", "tropical-beaches"],
-		travelTags: ["relaxation-wellness", "photography"],
-		rating: 4.8,
-		coordinates: { lat: 3.2028, lng: 73.2207 },
-	},
-	{
-		id: "4",
-		name: "Serengeti National Park",
-		address: "Serengeti, Tanzania",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["national-parks"],
-		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
-		rating: 4.9,
-		coordinates: { lat: -2.3333, lng: 34.8333 },
-	},
-	{
-		id: "5",
-		name: "Maldives Resort",
-		address: "Maldives",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["private-islands", "tropical-beaches"],
-		travelTags: ["relaxation-wellness", "photography"],
-		rating: 4.8,
-		coordinates: { lat: 3.2028, lng: 73.2207 },
-	},
-	{
-		id: "4",
-		name: "Serengeti National Park",
-		address: "Serengeti, Tanzania",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["national-parks"],
-		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
-		rating: 4.9,
-		coordinates: { lat: -2.3333, lng: 34.8333 },
-	},
-	{
-		id: "5",
-		name: "Maldives Resort",
-		address: "Maldives",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["private-islands", "tropical-beaches"],
-		travelTags: ["relaxation-wellness", "photography"],
-		rating: 4.8,
-		coordinates: { lat: 3.2028, lng: 73.2207 },
-	},
-	{
-		id: "4",
-		name: "Serengeti National Park",
-		address: "Serengeti, Tanzania",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["national-parks"],
-		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
-		rating: 4.9,
-		coordinates: { lat: -2.3333, lng: 34.8333 },
-	},
-	{
-		id: "5",
-		name: "Maldives Resort",
-		address: "Maldives",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["private-islands", "tropical-beaches"],
-		travelTags: ["relaxation-wellness", "photography"],
-		rating: 4.8,
-		coordinates: { lat: 3.2028, lng: 73.2207 },
-	},
-	{
-		id: "4",
-		name: "Serengeti National Park",
-		address: "Serengeti, Tanzania",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["national-parks"],
-		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
-		rating: 4.9,
-		coordinates: { lat: -2.3333, lng: 34.8333 },
-	},
-	{
-		id: "5",
-		name: "Maldives Resort",
-		address: "Maldives",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["private-islands", "tropical-beaches"],
-		travelTags: ["relaxation-wellness", "photography"],
-		rating: 4.8,
-		coordinates: { lat: 3.2028, lng: 73.2207 },
-	},
-	{
-		id: "4",
-		name: "Serengeti National Park",
-		address: "Serengeti, Tanzania",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["national-parks"],
-		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
-		rating: 4.9,
-		coordinates: { lat: -2.3333, lng: 34.8333 },
-	},
-	{
-		id: "5",
-		name: "Maldives Resort",
-		address: "Maldives",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["private-islands", "tropical-beaches"],
-		travelTags: ["relaxation-wellness", "photography"],
-		rating: 4.8,
-		coordinates: { lat: 3.2028, lng: 73.2207 },
-	},
-	{
-		id: "4",
-		name: "Serengeti National Park",
-		address: "Serengeti, Tanzania",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["national-parks"],
-		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
-		rating: 4.9,
-		coordinates: { lat: -2.3333, lng: 34.8333 },
-	},
-	{
-		id: "5",
-		name: "Maldives Resort",
-		address: "Maldives",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["private-islands", "tropical-beaches"],
-		travelTags: ["relaxation-wellness", "photography"],
-		rating: 4.8,
-		coordinates: { lat: 3.2028, lng: 73.2207 },
-	},
-	{
-		id: "4",
-		name: "Serengeti National Park",
-		address: "Serengeti, Tanzania",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["national-parks"],
-		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
-		rating: 4.9,
-		coordinates: { lat: -2.3333, lng: 34.8333 },
-	},
-	{
-		id: "5",
-		name: "Maldives Resort",
-		address: "Maldives",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["private-islands", "tropical-beaches"],
-		travelTags: ["relaxation-wellness", "photography"],
-		rating: 4.8,
-		coordinates: { lat: 3.2028, lng: 73.2207 },
-	},
-	{
-		id: "4",
-		name: "Serengeti National Park",
-		address: "Serengeti, Tanzania",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["national-parks"],
-		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
-		rating: 4.9,
-		coordinates: { lat: -2.3333, lng: 34.8333 },
-	},
-	{
-		id: "5",
-		name: "Maldives Resort",
-		address: "Maldives",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["private-islands", "tropical-beaches"],
-		travelTags: ["relaxation-wellness", "photography"],
-		rating: 4.8,
-		coordinates: { lat: 3.2028, lng: 73.2207 },
-	},
-	{
-		id: "4",
-		name: "Serengeti National Park",
-		address: "Serengeti, Tanzania",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["national-parks"],
-		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
-		rating: 4.9,
-		coordinates: { lat: -2.3333, lng: 34.8333 },
-	},
-	{
-		id: "5",
-		name: "Maldives Resort",
-		address: "Maldives",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["private-islands", "tropical-beaches"],
-		travelTags: ["relaxation-wellness", "photography"],
-		rating: 4.8,
-		coordinates: { lat: 3.2028, lng: 73.2207 },
-	},
-	{
-		id: "4",
-		name: "Serengeti National Park",
-		address: "Serengeti, Tanzania",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["national-parks"],
-		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
-		rating: 4.9,
-		coordinates: { lat: -2.3333, lng: 34.8333 },
-	},
-	{
-		id: "5",
-		name: "Maldives Resort",
-		address: "Maldives",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["private-islands", "tropical-beaches"],
-		travelTags: ["relaxation-wellness", "photography"],
-		rating: 4.8,
-		coordinates: { lat: 3.2028, lng: 73.2207 },
-	},
-	{
-		id: "4",
-		name: "Serengeti National Park",
-		address: "Serengeti, Tanzania",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["national-parks"],
-		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
-		rating: 4.9,
-		coordinates: { lat: -2.3333, lng: 34.8333 },
-	},
-	{
-		id: "5",
-		name: "Maldives Resort",
-		address: "Maldives",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["private-islands", "tropical-beaches"],
-		travelTags: ["relaxation-wellness", "photography"],
-		rating: 4.8,
-		coordinates: { lat: 3.2028, lng: 73.2207 },
-	},
-	{
-		id: "4",
-		name: "Serengeti National Park",
-		address: "Serengeti, Tanzania",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["national-parks"],
-		travelTags: ["nature-wildlife", "photography", "adventure-sports"],
-		rating: 4.9,
-		coordinates: { lat: -2.3333, lng: 34.8333 },
-	},
-	{
-		id: "5",
-		name: "Maldives Resort",
-		address: "Maldives",
-		image: "/placeholder.svg?height=200&width=300",
-		travelCategories: ["private-islands", "tropical-beaches"],
-		travelTags: ["relaxation-wellness", "photography"],
-		rating: 4.8,
-		coordinates: { lat: 3.2028, lng: 73.2207 },
+		coordinates: { lat: 48.7844, lng: 30.2227 },
 	},
 ];
 
@@ -462,7 +251,7 @@ const AdminPlacesPage = () => {
 	const [placesHasMore, setPlacesHasMore] = useState(true);
 	const [placesTotalCount, setPlacesTotalCount] = useState(0);
 	const [placesSearch, setPlacesSearch] = useState("");
-
+	const debouncedPlaceSearch = useDebounce(placesSearch);
 	const [newPlaceName, setNewPlaceName] = useState("");
 	const [newPlaceAddress, setNewPlaceAddress] = useState("");
 	const [newPlaceImage, setNewPlaceImage] = useState("");
@@ -500,7 +289,7 @@ const AdminPlacesPage = () => {
 		setPlacesPage(1);
 		setPlacesHasMore(true);
 		loadPlaces(true);
-	}, [placesSearch]);
+	}, [debouncedPlaceSearch]);
 
 	const loadPlaces = async (isInitial = false) => {
 		if (isInitial) {
@@ -514,7 +303,7 @@ const AdminPlacesPage = () => {
 				mockPlaces,
 				isInitial ? 1 : placesPage,
 				ITEMS_PER_PAGE,
-				placesSearch,
+				debouncedPlaceSearch,
 				["name", "address"],
 			);
 
@@ -557,13 +346,13 @@ const AdminPlacesPage = () => {
 			mockPlaces.unshift(newPlace);
 
 			if (
-				!placesSearch ||
+				!debouncedPlaceSearch ||
 				newPlace.name
 					.toLowerCase()
-					.includes(placesSearch.toLowerCase()) ||
+					.includes(debouncedPlaceSearch.toLowerCase()) ||
 				newPlace.address
 					.toLowerCase()
-					.includes(placesSearch.toLowerCase())
+					.includes(debouncedPlaceSearch.toLowerCase())
 			) {
 				setPlaces((prev) => [newPlace, ...prev]);
 				setPlacesTotalCount((prev) => prev + 1);
@@ -856,7 +645,7 @@ const AdminPlacesPage = () => {
 							</div>
 						) : places.length === 0 ? (
 							<div className="text-center py-8">
-								<MapPin className="w-12 h-12 mx-auto text-muted-foreground opacity-50 mb-4" />
+								<MapPin className="w-12 h-12 mx-auto text-muted-foreground opaaddress-50 mb-4" />
 								<p className="text-muted-foreground">
 									{t("placesPage.no_places")}
 								</p>
@@ -1039,14 +828,14 @@ const AdminPlacesPage = () => {
 												</div>
 											) : (
 												<div className="flex gap-4">
-													<div className="flex-shrink-0">
+													<div className="flex-shrink-0 w-[300px] h-20 overflow-hidden rounded-lg">
 														<img
 															src={
 																place.image ||
 																"/placeholder.svg"
 															}
 															alt={place.name}
-															className="w-24 h-24 object-cover rounded-lg"
+															className="w-full h-full object-cover"
 														/>
 													</div>
 
@@ -1067,7 +856,7 @@ const AdminPlacesPage = () => {
 																{place.rating >
 																	0 && (
 																	<div className="flex items-center gap-1 mt-1">
-																		<Star className="w-4 h-4 text-yellow-400 fill-current" />
+																		<Star className="w-4 h-4 fill-current" />
 																		<span className="text-sm font-medium">
 																			{place.rating.toFixed(
 																				1,

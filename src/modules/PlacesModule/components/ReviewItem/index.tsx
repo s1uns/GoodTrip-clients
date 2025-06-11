@@ -106,7 +106,7 @@ const ReviewItem = memo<ReviewProps>(
 			const newReply: Reply = {
 				id: Math.random().toString(36).substr(2, 9),
 				userId: "currentUser",
-				username: "johndoe",
+				username: "illiateliuk",
 				date: new Date().toISOString().split("T")[0],
 				text: replyText,
 				isOwn: true,

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Field, Form, Formik } from "formik";
 import { Link } from "react-router-dom";
 import { Button, Typography } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import LanguageChangerButton from "../../../../shared/components/LanguageChanger";
 import { LoginCredentials } from "../../../../shared/types/auth";
@@ -18,13 +18,19 @@ const initialValues: LoginCredentials = {
 
 const LoginForm = () => {
 	const [serverErrors, setServerErrors] = useState<string | null>(null);
+	const [loading, setLoading] = useState(false);
 	const login = useUserStore((state) => state.login);
 	const { t } = useTranslation();
 	const validationSchema = getUserLoginSchema(t);
 
+
 	const handleLogin = async (values: LoginCredentials) => {
 		values.setErrors = setServerErrors;
+		setLoading(true);
+		await new Promise((resolve) => setTimeout(resolve, 600));
+
 		await login(values);
+		setLoading(false);
 	};
 
 	return (
@@ -67,7 +73,9 @@ const LoginForm = () => {
 							<Spacer />
 						)}
 
-						<LoginButton type="submit">{t("login")}</LoginButton>
+						<LoginButton type="submit">
+							{loading ? t("loginProcess") : t("login")}
+						</LoginButton>
 
 						<StyledLink to="/restore-password">
 							<ForgotPasswordText>

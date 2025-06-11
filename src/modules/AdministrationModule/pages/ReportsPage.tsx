@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import {
 	Card,
@@ -34,6 +32,8 @@ import {
 	MapPin,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import useDebounce from "@/shared/utils/hooks/useDebounce";
+import { showSuccessToast } from "@/shared/utils/helpers/showToast";
 
 interface Report {
 	id: string;
@@ -485,6 +485,8 @@ export default function AdminReportsPage() {
 	const [totalReports, setTotalReports] = useState(0);
 
 	const [searchQuery, setSearchQuery] = useState("");
+	const debouncedReportSearch = useDebounce(searchQuery);
+
 	const [statusFilter, setStatusFilter] = useState("all");
 	const [typeFilter, setTypeFilter] = useState("all");
 
@@ -499,7 +501,7 @@ export default function AdminReportsPage() {
 		setCurrentPage(1);
 		setHasMore(true);
 		fetchReports(true);
-	}, [searchQuery, statusFilter, typeFilter]);
+	}, [debouncedReportSearch, statusFilter, typeFilter]);
 
 	const fetchReports = async (isInitial = false) => {
 		if (isInitial) {
@@ -603,7 +605,7 @@ export default function AdminReportsPage() {
 				mockReports[reportIndex].status = "resolved";
 			}
 
-			alert(
+			showSuccessToast(
 				t("reportsPage.contentDeletedSuccess", {
 					contentType:
 						contentType.charAt(0).toUpperCase() +
@@ -646,8 +648,9 @@ export default function AdminReportsPage() {
 			if (reportIndex !== -1) {
 				mockReports[reportIndex].status = "resolved";
 			}
-
-			alert(t("reportsPage.userBlockedSuccess", { userName: userName }));
+			showSuccessToast(
+				t("reportsPage.userBlockedSuccess", { userName: userName }),
+			);
 		} catch (error) {
 			console.error("Error blocking user:", error);
 		} finally {
@@ -680,21 +683,6 @@ export default function AdminReportsPage() {
 			minute: "2-digit",
 		});
 	};
-
-	if (loading) {
-		return (
-			<div className="container mx-auto px-4 py-8">
-				<div className="flex items-center justify-center h-64">
-					<div className="text-center">
-						<Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-						<p className="text-muted-foreground">
-							{t("reportsPage.loadingReports")}
-						</p>
-					</div>
-				</div>
-			</div>
-		);
-	}
 
 	return (
 		<div className="container mx-auto px-4 py-8">
@@ -819,295 +807,339 @@ export default function AdminReportsPage() {
 				<p className="text-muted-foreground">
 					{t("reportsPage.showingReports", {
 						current: reports.length,
-						total: totalReports,
 					})}
-					{totalReports !== mockReports.length &&
-						t("reportsPage.matchFilters", {
-							totalFiltered: totalReports,
-						})}
 				</p>
 			</div>
-
-			{reports.length === 0 ? (
-				<div className="text-center py-12">
-					<AlertTriangle className="w-16 h-16 mx-auto text-muted-foreground opacity-50 mb-4" />
-					<h3 className="text-lg font-semibold mb-2">
-						{t("reportsPage.noReportsFoundTitle")}
-					</h3>
-					<p className="text-muted-foreground mb-4">
-						{totalReports === 0
-							? t("reportsPage.noReportsAdjustFilter")
-							: t("reportsPage.noReportsAvailable")}
-					</p>
-					{activeFiltersCount > 0 && (
-						<Button variant="outline" onClick={clearFilters}>
-							{t("reportsPage.clearAllFiltersButton")}
-						</Button>
-					)}
+			{loading ? (
+				<div className="container mx-auto px-4 py-8">
+					<div className="flex items-center justify-center h-64">
+						<div className="text-center">
+							<Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+							<p className="text-muted-foreground">
+								{t("reportsPage.loadingReports")}
+							</p>
+						</div>
+					</div>
 				</div>
 			) : (
 				<>
-					<div className="space-y-6">
-						{reports.map((report) => (
-							<Card
-								key={report.id}
-								className={
-									report.status === "pending"
-										? "border-orange-200"
-										: ""
-								}
-							>
-								<CardHeader>
-									<div className="flex justify-between items-start">
-										<div className="space-y-2">
-											<div className="flex items-center gap-2">
-												<Badge
-													variant={
-														report.type === "review"
-															? "default"
-															: "secondary"
-													}
-												>
-													{report.type ===
-													"review" ? (
-														<>
-															<MessageSquare className="w-3 h-3 mr-1" />
-															{t(
-																"reportsPage.reviewType",
+					{reports.length === 0 ? (
+						<div className="text-center py-12">
+							<AlertTriangle className="w-16 h-16 mx-auto text-muted-foreground opacity-50 mb-4" />
+							<h3 className="text-lg font-semibold mb-2">
+								{t("reportsPage.noReportsFoundTitle")}
+							</h3>
+							<p className="text-muted-foreground mb-4">
+								{totalReports === 0
+									? t("reportsPage.noReportsAdjustFilter")
+									: t("reportsPage.noReportsAvailable")}
+							</p>
+							{activeFiltersCount > 0 && (
+								<Button
+									variant="outline"
+									onClick={clearFilters}
+								>
+									{t("reportsPage.clearAllFiltersButton")}
+								</Button>
+							)}
+						</div>
+					) : (
+						<>
+							<div className="space-y-6">
+								{reports.map((report) => (
+									<Card
+										key={report.id}
+										className={
+											report.status === "pending"
+												? "border-orange-200"
+												: ""
+										}
+									>
+										<CardHeader>
+											<div className="flex justify-between items-start">
+												<div className="space-y-2">
+													<div className="flex items-center gap-2">
+														<Badge
+															variant={
+																report.type ===
+																"review"
+																	? "default"
+																	: "secondary"
+															}
+														>
+															{report.type ===
+															"review" ? (
+																<>
+																	<MessageSquare className="w-3 h-3 mr-1" />
+																	{t(
+																		"reportsPage.reviewType",
+																	)}
+																</>
+															) : (
+																<>
+																	<MessageSquare className="w-3 h-3 mr-1" />
+																	{t(
+																		"reportsPage.replyType",
+																	)}
+																</>
 															)}
-														</>
-													) : (
-														<>
-															<MessageSquare className="w-3 h-3 mr-1" />
-															{t(
-																"reportsPage.replyType",
+														</Badge>
+														<Badge
+															variant={
+																report.status ===
+																"pending"
+																	? "destructive"
+																	: "default"
+															}
+														>
+															{report.status ===
+															"pending"
+																? t(
+																		"reportsPage.pendingStatus",
+																  )
+																: t(
+																		"reportsPage.resolvedStatus",
+																  )}
+														</Badge>
+														<span className="text-sm text-muted-foreground flex items-center gap-1">
+															<Calendar className="w-3 h-3" />
+															{formatDate(
+																report.createdAt,
 															)}
-														</>
+														</span>
+													</div>
+													{report.placeName && (
+														<div className="flex items-center gap-1 text-sm text-muted-foreground">
+															<MapPin className="w-3 h-3" />
+															{report.placeName}
+														</div>
 													)}
-												</Badge>
-												<Badge
-													variant={
-														report.status ===
-														"pending"
-															? "destructive"
-															: "default"
-													}
-												>
-													{report.status === "pending"
-														? t(
-																"reportsPage.pendingStatus",
-														  )
-														: t(
-																"reportsPage.resolvedStatus",
-														  )}
-												</Badge>
-												<span className="text-sm text-muted-foreground flex items-center gap-1">
-													<Calendar className="w-3 h-3" />
-													{formatDate(
-														report.createdAt,
-													)}
-												</span>
+												</div>
 											</div>
-											{report.placeName && (
-												<div className="flex items-center gap-1 text-sm text-muted-foreground">
-													<MapPin className="w-3 h-3" />
-													{report.placeName}
+										</CardHeader>
+										<CardContent className="space-y-4">
+											<div className="space-y-2">
+												<Label className="text-sm font-semibold">
+													{t(
+														"reportsPage.reportedContentLabel",
+													)}
+													:
+												</Label>
+												<div className="p-3 bg-muted rounded-lg">
+													<p className="text-sm">
+														{report.reportedContent}
+													</p>
+												</div>
+											</div>
+
+											<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+												<div className="space-y-2">
+													<Label className="text-sm font-semibold">
+														{t(
+															"reportsPage.reportedUserLabel",
+														)}
+														:
+													</Label>
+													<div className="flex items-center gap-2">
+														<User className="w-4 h-4 text-muted-foreground" />
+														<span className="text-sm">
+															{
+																report
+																	.reportedUser
+																	.name
+															}{" "}
+															(@
+															{
+																report
+																	.reportedUser
+																	.username
+															}
+															)
+														</span>
+													</div>
+												</div>
+												<div className="space-y-2">
+													<Label className="text-sm font-semibold">
+														{t(
+															"reportsPage.reportedByLabel",
+														)}
+														:
+													</Label>
+													<div className="flex items-center gap-2">
+														<User className="w-4 h-4 text-muted-foreground" />
+														<span className="text-sm">
+															{
+																report
+																	.reportedBy
+																	.name
+															}{" "}
+															(@
+															{
+																report
+																	.reportedBy
+																	.username
+															}
+															)
+														</span>
+													</div>
+												</div>
+											</div>
+
+											<div className="space-y-2">
+												<Label className="text-sm font-semibold">
+													{t(
+														"reportsPage.reasonLabel",
+													)}
+													:
+												</Label>
+												<p className="text-sm text-orange-600 font-medium">
+													{report.reason}
+												</p>
+											</div>
+
+											<div className="space-y-2">
+												<Label className="text-sm font-semibold">
+													{t(
+														"reportsPage.descriptionLabel",
+													)}
+													:
+												</Label>
+												<p className="text-sm text-muted-foreground">
+													{report.description}
+												</p>
+											</div>
+
+											{report.status === "pending" && (
+												<div className="flex flex-wrap gap-2 pt-4 border-t">
+													<Button
+														variant="outline"
+														size="sm"
+														onClick={() =>
+															handleCloseReport(
+																report.id,
+															)
+														}
+														disabled={processingActions.has(
+															report.id,
+														)}
+													>
+														{processingActions.has(
+															report.id,
+														) ? (
+															<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+														) : (
+															<CheckCircle className="w-4 h-4 mr-2" />
+														)}
+														{t(
+															"reportsPage.closeReportButton",
+														)}
+													</Button>
+													<Button
+														variant="destructive"
+														size="sm"
+														onClick={() =>
+															handleDeleteContent(
+																report.id,
+																report.type,
+															)
+														}
+														disabled={processingActions.has(
+															report.id,
+														)}
+													>
+														{processingActions.has(
+															report.id,
+														) ? (
+															<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+														) : (
+															<Trash2 className="w-4 h-4 mr-2" />
+														)}
+														{t(
+															"reportsPage.deleteContentButton",
+															{
+																contentType: t(
+																	`reportsPage.${report.type}Item`,
+																),
+															},
+														)}
+													</Button>
+													<Button
+														variant="destructive"
+														size="sm"
+														onClick={() =>
+															handleBlockUser(
+																report.id,
+																report
+																	.reportedUser
+																	.id,
+																report
+																	.reportedUser
+																	.name,
+															)
+														}
+														disabled={processingActions.has(
+															report.id,
+														)}
+													>
+														{processingActions.has(
+															report.id,
+														) ? (
+															<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+														) : (
+															<UserX className="w-4 h-4 mr-2" />
+														)}
+														{t(
+															"reportsPage.blockUserButton",
+														)}
+													</Button>
 												</div>
 											)}
-										</div>
-									</div>
-								</CardHeader>
-								<CardContent className="space-y-4">
-									<div className="space-y-2">
-										<Label className="text-sm font-semibold">
-											{t(
-												"reportsPage.reportedContentLabel",
-											)}
-											:
-										</Label>
-										<div className="p-3 bg-muted rounded-lg">
-											<p className="text-sm">
-												{report.reportedContent}
-											</p>
-										</div>
-									</div>
+										</CardContent>
+									</Card>
+								))}
+							</div>
 
-									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-										<div className="space-y-2">
-											<Label className="text-sm font-semibold">
+							{hasMore && (
+								<div className="flex justify-center mt-8">
+									<Button
+										onClick={handleLoadMore}
+										disabled={loadingMore}
+										variant="outline"
+										size="lg"
+										className="min-w-[200px]"
+									>
+										{loadingMore ? (
+											<>
+												<Loader2 className="w-4 h-4 mr-2 animate-spin" />
 												{t(
-													"reportsPage.reportedUserLabel",
+													"reportsPage.loadingMoreReports",
 												)}
-												:
-											</Label>
-											<div className="flex items-center gap-2">
-												<User className="w-4 h-4 text-muted-foreground" />
-												<span className="text-sm">
-													{report.reportedUser.name}{" "}
-													(@
-													{
-														report.reportedUser
-															.username
-													}
-													)
+											</>
+										) : (
+											<>
+												{t(
+													"reportsPage.loadMoreReportsButton",
+												)}
+												<span className="ml-2 text-muted-foreground">
+													({reports.length} of{" "}
+													{totalReports})
 												</span>
-											</div>
-										</div>
-										<div className="space-y-2">
-											<Label className="text-sm font-semibold">
-												{t(
-													"reportsPage.reportedByLabel",
-												)}
-												:
-											</Label>
-											<div className="flex items-center gap-2">
-												<User className="w-4 h-4 text-muted-foreground" />
-												<span className="text-sm">
-													{report.reportedBy.name} (@
-													{report.reportedBy.username}
-													)
-												</span>
-											</div>
-										</div>
-									</div>
+											</>
+										)}
+									</Button>
+								</div>
+							)}
 
-									<div className="space-y-2">
-										<Label className="text-sm font-semibold">
-											{t("reportsPage.reasonLabel")}:
-										</Label>
-										<p className="text-sm text-orange-600 font-medium">
-											{report.reason}
-										</p>
-									</div>
-
-									<div className="space-y-2">
-										<Label className="text-sm font-semibold">
-											{t("reportsPage.descriptionLabel")}:
-										</Label>
-										<p className="text-sm text-muted-foreground">
-											{report.description}
-										</p>
-									</div>
-
-									{report.status === "pending" && (
-										<div className="flex flex-wrap gap-2 pt-4 border-t">
-											<Button
-												variant="outline"
-												size="sm"
-												onClick={() =>
-													handleCloseReport(report.id)
-												}
-												disabled={processingActions.has(
-													report.id,
-												)}
-											>
-												{processingActions.has(
-													report.id,
-												) ? (
-													<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-												) : (
-													<CheckCircle className="w-4 h-4 mr-2" />
-												)}
-												{t(
-													"reportsPage.closeReportButton",
-												)}
-											</Button>
-											<Button
-												variant="destructive"
-												size="sm"
-												onClick={() =>
-													handleDeleteContent(
-														report.id,
-														report.type,
-													)
-												}
-												disabled={processingActions.has(
-													report.id,
-												)}
-											>
-												{processingActions.has(
-													report.id,
-												) ? (
-													<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-												) : (
-													<Trash2 className="w-4 h-4 mr-2" />
-												)}
-												{t(
-													"reportsPage.deleteContentButton",
-													{
-														contentType: t(
-															`reportsPage.${report.type}Item`,
-														),
-													},
-												)}
-											</Button>
-											<Button
-												variant="destructive"
-												size="sm"
-												onClick={() =>
-													handleBlockUser(
-														report.id,
-														report.reportedUser.id,
-														report.reportedUser
-															.name,
-													)
-												}
-												disabled={processingActions.has(
-													report.id,
-												)}
-											>
-												{processingActions.has(
-													report.id,
-												) ? (
-													<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-												) : (
-													<UserX className="w-4 h-4 mr-2" />
-												)}
-												{t(
-													"reportsPage.blockUserButton",
-												)}
-											</Button>
-										</div>
-									)}
-								</CardContent>
-							</Card>
-						))}
-					</div>
-
-					{hasMore && (
-						<div className="flex justify-center mt-8">
-							<Button
-								onClick={handleLoadMore}
-								disabled={loadingMore}
-								variant="outline"
-								size="lg"
-								className="min-w-[200px]"
-							>
-								{loadingMore ? (
-									<>
-										<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-										{t("reportsPage.loadingMoreReports")}
-									</>
-								) : (
-									<>
-										{t("reportsPage.loadMoreReportsButton")}
-										<span className="ml-2 text-muted-foreground">
-											({reports.length} of {totalReports})
-										</span>
-									</>
-								)}
-							</Button>
-						</div>
-					)}
-
-					{!hasMore && reports.length > 0 && (
-						<div className="text-center mt-8 py-4 border-t">
-							<p className="text-muted-foreground">
-								{t("reportsPage.endOfReports", {
-									count: reports.length,
-								})}
-							</p>
-						</div>
+							{!hasMore && reports.length > 0 && (
+								<div className="text-center mt-8 py-4 border-t">
+									<p className="text-muted-foreground">
+										{t("reportsPage.endOfReports", {
+											count: reports.length,
+										})}
+									</p>
+								</div>
+							)}
+						</>
 					)}
 				</>
 			)}

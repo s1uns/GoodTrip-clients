@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import {
 	Card,
@@ -33,6 +31,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { convertDateToDDMonYYYY } from "@/shared/utils/helpers/convertDateToDDMonYYYY";
+import useDebounce from "@/shared/utils/hooks/useDebounce";
 
 interface AdminUser {
 	id: string;
@@ -55,7 +54,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "emmawanders",
 		email: "emma.wanderlust@example.com",
 		status: "active",
-		joinDate: "2023-03-15",
+		joinDate: "2025-03-15",
 		lastActive: "2025-01-20",
 		reviewsCount: 156,
 		reportsCount: 0,
@@ -67,7 +66,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "marcoexplores",
 		email: "marco.explorer@example.com",
 		status: "active",
-		joinDate: "2023-01-20",
+		joinDate: "2025-01-20",
 		lastActive: "2025-01-19",
 		reviewsCount: 94,
 		reportsCount: 1,
@@ -79,7 +78,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "sophiatravels",
 		email: "sophia.traveler@example.com",
 		status: "blocked",
-		joinDate: "2023-06-10",
+		joinDate: "2025-06-10",
 		lastActive: "2025-01-15",
 		reviewsCount: 128,
 		reportsCount: 3,
@@ -91,7 +90,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "alexnomad",
 		email: "alex.nomad@example.com",
 		status: "active",
-		joinDate: "2023-09-05",
+		joinDate: "2025-05-05",
 		lastActive: "2025-01-21",
 		reviewsCount: 89,
 		reportsCount: 0,
@@ -103,7 +102,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "mayaadventure",
 		email: "maya.adventure@example.com",
 		status: "active",
-		joinDate: "2023-04-12",
+		joinDate: "2025-05-12",
 		lastActive: "2025-01-18",
 		reviewsCount: 203,
 		reportsCount: 0,
@@ -115,7 +114,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "carlosfoodie",
 		email: "carlos.foodie@example.com",
 		status: "active",
-		joinDate: "2023-11-08",
+		joinDate: "2025-04-08",
 		lastActive: "2025-01-17",
 		reviewsCount: 167,
 		reportsCount: 2,
@@ -127,7 +126,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "lunaphotos",
 		email: "luna.photographer@example.com",
 		status: "active",
-		joinDate: "2023-02-28",
+		joinDate: "2025-02-28",
 		lastActive: "2025-01-20",
 		reviewsCount: 145,
 		reportsCount: 0,
@@ -139,7 +138,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "davidbackpacks",
 		email: "david.backpacker@example.com",
 		status: "blocked",
-		joinDate: "2023-08-14",
+		joinDate: "2025-03-14",
 		lastActive: "2025-01-10",
 		reviewsCount: 234,
 		reportsCount: 5,
@@ -151,7 +150,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "ariawellness",
 		email: "aria.wellness@example.com",
 		status: "active",
-		joinDate: "2023-05-22",
+		joinDate: "2025-05-22",
 		lastActive: "2025-01-19",
 		reviewsCount: 98,
 		reportsCount: 0,
@@ -163,7 +162,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "ryanhistory",
 		email: "ryan.historian@example.com",
 		status: "active",
-		joinDate: "2022-12-03",
+		joinDate: "2025-12-03",
 		lastActive: "2025-01-16",
 		reviewsCount: 189,
 		reportsCount: 1,
@@ -175,7 +174,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "bellacoastal",
 		email: "isabella.coastal@example.com",
 		status: "active",
-		joinDate: "2023-07-18",
+		joinDate: "2025-05-18",
 		lastActive: "2025-01-14",
 		reviewsCount: 112,
 		reportsCount: 0,
@@ -187,7 +186,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "kaimountain",
 		email: "kai.mountain@example.com",
 		status: "active",
-		joinDate: "2023-03-25",
+		joinDate: "2025-03-25",
 		lastActive: "2025-01-21",
 		reviewsCount: 87,
 		reportsCount: 0,
@@ -199,7 +198,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "zaraurban",
 		email: "zara.urban@example.com",
 		status: "blocked",
-		joinDate: "2023-10-12",
+		joinDate: "2025-06-11",
 		lastActive: "2025-01-08",
 		reviewsCount: 156,
 		reportsCount: 4,
@@ -211,7 +210,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "omardesert",
 		email: "omar.desert@example.com",
 		status: "active",
-		joinDate: "2023-01-30",
+		joinDate: "2025-01-30",
 		lastActive: "2025-01-20",
 		reviewsCount: 93,
 		reportsCount: 0,
@@ -223,7 +222,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "ninaforest",
 		email: "nina.forest@example.com",
 		status: "active",
-		joinDate: "2023-06-07",
+		joinDate: "2025-06-07",
 		lastActive: "2025-01-18",
 		reviewsCount: 134,
 		reportsCount: 1,
@@ -235,7 +234,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "liamisland",
 		email: "liam.island@example.com",
 		status: "active",
-		joinDate: "2023-04-20",
+		joinDate: "2025-04-20",
 		lastActive: "2025-01-17",
 		reviewsCount: 78,
 		reportsCount: 0,
@@ -247,7 +246,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "priyaspiritual",
 		email: "priya.spiritual@example.com",
 		status: "active",
-		joinDate: "2023-09-15",
+		joinDate: "2025-03-15",
 		lastActive: "2025-01-19",
 		reviewsCount: 102,
 		reportsCount: 0,
@@ -259,7 +258,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "felixarctic",
 		email: "felix.arctic@example.com",
 		status: "active",
-		joinDate: "2022-11-28",
+		joinDate: "2025-11-28",
 		lastActive: "2025-01-15",
 		reviewsCount: 67,
 		reportsCount: 0,
@@ -271,7 +270,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "camilavolcano",
 		email: "camila.volcano@example.com",
 		status: "blocked",
-		joinDate: "2023-02-14",
+		joinDate: "2025-02-14",
 		lastActive: "2025-01-12",
 		reviewsCount: 89,
 		reportsCount: 6,
@@ -283,7 +282,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "hassannomad",
 		email: "hassan.nomad@example.com",
 		status: "active",
-		joinDate: "2023-08-03",
+		joinDate: "2025-08-03",
 		lastActive: "2025-01-20",
 		reviewsCount: 145,
 		reportsCount: 0,
@@ -295,7 +294,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "yukisnow",
 		email: "yuki.snow@example.com",
 		status: "active",
-		joinDate: "2023-12-10",
+		joinDate: "2025-03-10",
 		lastActive: "2025-01-21",
 		reviewsCount: 76,
 		reportsCount: 0,
@@ -307,7 +306,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "elenawine",
 		email: "elena.wine@example.com",
 		status: "active",
-		joinDate: "2023-05-18",
+		joinDate: "2025-05-18",
 		lastActive: "2025-01-16",
 		reviewsCount: 123,
 		reportsCount: 1,
@@ -319,7 +318,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "jamalsafari",
 		email: "jamal.safari@example.com",
 		status: "active",
-		joinDate: "2023-03-08",
+		joinDate: "2025-03-08",
 		lastActive: "2025-01-19",
 		reviewsCount: 167,
 		reportsCount: 0,
@@ -331,7 +330,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "astridfjord",
 		email: "astrid.fjord@example.com",
 		status: "active",
-		joinDate: "2023-07-25",
+		joinDate: "2025-04-25",
 		lastActive: "2025-01-18",
 		reviewsCount: 98,
 		reportsCount: 0,
@@ -343,7 +342,7 @@ const mockAdminUsers: AdminUser[] = [
 		username: "diegojungle",
 		email: "diego.jungle@example.com",
 		status: "blocked",
-		joinDate: "2023-10-05",
+		joinDate: "2025-05-05",
 		lastActive: "2025-01-09",
 		reviewsCount: 134,
 		reportsCount: 7,
@@ -425,6 +424,7 @@ export default function AdminUsersPage() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [statusFilter, setStatusFilter] = useState("all");
 	const [sortBy, setSortBy] = useState("name-asc");
+	const debouncedUserSearch = useDebounce(searchQuery);
 
 	const { t, i18n } = useTranslation();
 
@@ -433,7 +433,7 @@ export default function AdminUsersPage() {
 		setCurrentPage(1);
 		setHasMore(true);
 		fetchUsers(true);
-	}, [searchQuery, statusFilter, sortBy]);
+	}, [debouncedUserSearch, statusFilter, sortBy]);
 
 	const fetchUsers = async (isInitial = false) => {
 		if (isInitial) {
@@ -529,21 +529,6 @@ export default function AdminUsersPage() {
 		statusFilter !== "all",
 		sortBy !== "name-asc",
 	].filter(Boolean).length;
-
-	if (loading) {
-		return (
-			<div className="container mx-auto px-4 py-8">
-				<div className="flex items-center justify-center h-64">
-					<div className="text-center">
-						<Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-						<p className="text-muted-foreground">
-							Loading users...
-						</p>
-					</div>
-				</div>
-			</div>
-		);
-	}
 
 	return (
 		<div className="container mx-auto px-4 py-8">
@@ -678,16 +663,23 @@ export default function AdminUsersPage() {
 				<p className="text-muted-foreground">
 					{t("userManagement.showingUsers", {
 						current: users.length,
-						total: totalUsers,
 					})}
-					{totalUsers !== mockAdminUsers.length &&
-						t("userManagement.matchingFilters", {
-							total: totalUsers,
-						})}
+
 				</p>
 			</div>
 
-			{users.length === 0 ? (
+			{loading ? (
+				<div className="container mx-auto px-4 py-8">
+					<div className="flex items-center justify-center h-64">
+						<div className="text-center">
+							<Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+							<p className="text-muted-foreground">
+								{t("loadingUsers")}
+							</p>
+						</div>
+					</div>
+				</div>
+			) : users.length === 0 ? (
 				<div className="text-center py-12">
 					<Users className="w-16 h-16 mx-auto text-muted-foreground opacity-50 mb-4" />
 					<h3 className="text-lg font-semibold mb-2">
@@ -855,7 +847,6 @@ export default function AdminUsersPage() {
 												"userManagement.loadMore.count",
 												{
 													current: users.length,
-													total: totalUsers,
 												},
 											)}
 										</span>

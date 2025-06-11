@@ -8,6 +8,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { useTranslation } from "react-i18next";
 
 interface ConfirmationModalProps {
 	isOpen: boolean;
@@ -32,6 +33,7 @@ export function ConfirmationModal({
 	isLoading = false,
 	variant = "destructive",
 }: ConfirmationModalProps) {
+	const { t } = useTranslation();
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
 			<DialogContent className="w-300">
@@ -67,7 +69,7 @@ export function ConfirmationModal({
 						<div className="mt-3 p-3 bg-muted rounded-lg">
 							<p className="text-sm">
 								<span className="font-medium capitalize">
-									{itemType}:
+									{itemType || t("common.itemTypeDefault")}
 								</span>{" "}
 								<span className="font-semibold">
 									{itemName}
@@ -79,9 +81,8 @@ export function ConfirmationModal({
 					{variant === "destructive" && (
 						<div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
 							<p className="text-sm text-red-800">
-								<strong>Warning:</strong> This action cannot be
-								undone. All associated data will be permanently
-								removed.
+								<strong>{t("dialog.warning")}:</strong>{" "}
+								{t("dialog.destructiveWarningMessage")}
 							</p>
 						</div>
 					)}
@@ -95,7 +96,7 @@ export function ConfirmationModal({
 						className="flex-1 sm:flex-none"
 					>
 						<X className="w-4 h-4 mr-2" />
-						Cancel
+						{t("dialog.cancelButton")}
 					</Button>
 					<Button
 						variant={
@@ -110,14 +111,14 @@ export function ConfirmationModal({
 						{isLoading ? (
 							<>
 								<div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent" />
-								Deleting...
+								{t("dialog.deletingButton")}
 							</>
 						) : (
 							<>
 								<Trash2 className="w-4 h-4 mr-2" />
 								{variant === "destructive"
-									? "Delete"
-									: "Confirm"}
+									? t("dialog.deleteButton")
+									: t("dialog.confirmButton")}
 							</>
 						)}
 					</Button>

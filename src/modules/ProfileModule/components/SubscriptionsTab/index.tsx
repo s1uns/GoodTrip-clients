@@ -1,7 +1,5 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
 	Card,
@@ -31,6 +29,9 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTranslation } from "react-i18next";
+import useDebounce from "@/shared/utils/hooks/useDebounce";
+import { Link } from "react-router-dom";
+import { ROUTES } from "@/shared/constants/routes";
 
 const ITEMS_PER_PAGE = 3;
 
@@ -46,19 +47,19 @@ interface Subscription {
 
 const allSubscribers = [
 	{
-		id: 1,
+		id: 1123123,
 		firstName: "David",
 		lastName: "Travel",
-		since: "Jan 2023",
+		since: "Jan 2025",
 		subscribers: 1240,
 		rating: 4.7,
 		reviews: 89,
 	},
 	{
-		id: 2,
+		id: "1",
 		firstName: "Emma",
 		lastName: "Wanderlust",
-		since: "Mar 2023",
+		since: "Mar 2025",
 		subscribers: 3450,
 		rating: 4.9,
 		reviews: 156,
@@ -67,7 +68,7 @@ const allSubscribers = [
 		id: 3,
 		firstName: "Frank",
 		lastName: "Explorer",
-		since: "May 2023",
+		since: "May 2025",
 		subscribers: 780,
 		rating: 4.5,
 		reviews: 42,
@@ -76,7 +77,7 @@ const allSubscribers = [
 		id: 4,
 		firstName: "Sarah",
 		lastName: "Hiker",
-		since: "Feb 2023",
+		since: "Feb 2025",
 		subscribers: 2100,
 		rating: 4.8,
 		reviews: 112,
@@ -85,7 +86,7 @@ const allSubscribers = [
 		id: 5,
 		firstName: "Alex",
 		lastName: "Traveler",
-		since: "Apr 2023",
+		since: "Apr 2025",
 		subscribers: 1560,
 		rating: 4.6,
 		reviews: 78,
@@ -94,7 +95,7 @@ const allSubscribers = [
 		id: 6,
 		firstName: "Maria",
 		lastName: "Explorer",
-		since: "Jun 2023",
+		since: "Jun 2025",
 		subscribers: 890,
 		rating: 4.4,
 		reviews: 36,
@@ -103,7 +104,7 @@ const allSubscribers = [
 		id: 7,
 		firstName: "John",
 		lastName: "Backpacker",
-		since: "Jul 2023",
+		since: "Jun 2025",
 		subscribers: 1320,
 		rating: 4.7,
 		reviews: 64,
@@ -112,7 +113,7 @@ const allSubscribers = [
 		id: 8,
 		firstName: "Lisa",
 		lastName: "Adventurer",
-		since: "Aug 2023",
+		since: "Jun 2025",
 		subscribers: 2450,
 		rating: 4.8,
 		reviews: 128,
@@ -196,8 +197,32 @@ export default function SubscriptionsTab() {
 	const [subscriptionsSort, setSubscriptionsSort] = useState("name-asc");
 	const [activeTab, setActiveTab] = useState("subscriptions");
 
+	const debouncedSubscriberSearch = useDebounce(subscribersSearch);
+	const debouncedSubscriptionSearch = useDebounce(subscriptionsSearch);
+	console.log("SEARCH 123: ", subscribersSearch);
+
+	useEffect(() => {
+		loadMoreSubscribers();
+		loadMoreSubscriptions();
+	}, []);
+
+	useEffect(() => {
+		setSubscribers([]);
+		setSubscribersPage(1);
+		setHasMoreSubscribers(true);
+		loadMoreSubscribers();
+	}, [debouncedSubscriberSearch, subscribersSort]);
+
+	useEffect(() => {
+		setSubscriptions([]);
+		setSubscriptionsPage(1);
+		setHasMoreSubscriptions(true);
+		loadMoreSubscriptions();
+	}, [debouncedSubscriptionSearch, subscriptionsSort]);
+
 	const filteredSubscribers = allSubscribers.filter((sub) => {
 		const fullName = `${sub.firstName} ${sub.lastName}`.toLowerCase();
+
 		return fullName.includes(subscribersSearch.toLowerCase());
 	});
 
@@ -206,104 +231,136 @@ export default function SubscriptionsTab() {
 		return fullName.includes(subscriptionsSearch.toLowerCase());
 	});
 
-	const sortedSubscribers = [...filteredSubscribers].sort((a, b) => {
-		switch (subscribersSort) {
-			case "name-asc":
-				return `${a.firstName} ${a.lastName}`.localeCompare(
-					`${b.firstName} ${b.lastName}`,
-				);
-			case "name-desc":
-				return `${b.firstName} ${b.lastName}`.localeCompare(
-					`${a.firstName} ${a.lastName}`,
-				);
-			case "subscribers-asc":
-				return a.subscribers - b.subscribers;
-			case "subscribers-desc":
-				return b.subscribers - a.subscribers;
-			case "rating-asc":
-				return a.rating - b.rating;
-			case "rating-desc":
-				return b.rating - a.rating;
-			default:
-				return 0;
-		}
-	});
-
-	const sortedSubscriptions = [...filteredSubscriptions].sort((a, b) => {
-		switch (subscriptionsSort) {
-			case "name-asc":
-				return `${a.firstName} ${a.lastName}`.localeCompare(
-					`${b.firstName} ${b.lastName}`,
-				);
-			case "name-desc":
-				return `${b.firstName} ${b.lastName}`.localeCompare(
-					`${a.firstName} ${a.lastName}`,
-				);
-			case "subscribers-asc":
-				return a.subscribers - b.subscribers;
-			case "subscribers-desc":
-				return b.subscribers - a.subscribers;
-			case "rating-asc":
-				return a.rating - b.rating;
-			case "rating-desc":
-				return b.rating - a.rating;
-			default:
-				return 0;
-		}
-	});
-
-	useEffect(() => {
-		loadMoreSubscribers();
-		loadMoreSubscriptions();
-	}, []);
-
-	const loadMoreSubscribers = () => {
+	const loadMoreSubscribers = useCallback(() => {
 		if (loadingSubscribers) return;
 
 		setLoadingSubscribers(true);
 
 		setTimeout(() => {
+			const currentSortedSubscribers = [...filteredSubscribers].sort(
+				(a, b) => {
+					switch (subscribersSort) {
+						case "name-asc":
+							return `${a.firstName} ${a.lastName}`
+								.toLowerCase()
+								.localeCompare(
+									`${b.firstName} ${b.lastName}`.toLowerCase(),
+								);
+						case "name-desc":
+							return `${b.firstName} ${b.lastName}`
+								.toLowerCase()
+								.localeCompare(
+									`${a.firstName} ${a.lastName}`.toLowerCase(),
+								);
+						case "subscribers-asc":
+							return a.subscribers - b.subscribers;
+						case "subscribers-desc":
+							return b.subscribers - a.subscribers;
+						case "rating-asc":
+							return a.rating - b.rating;
+						case "rating-desc":
+							return b.rating - a.rating;
+						default:
+							return 0;
+					}
+				},
+			);
+
 			const startIndex = (subscribersPage - 1) * ITEMS_PER_PAGE;
 			const endIndex = startIndex + ITEMS_PER_PAGE;
-			const newItems = sortedSubscribers.slice(startIndex, endIndex);
+			const newItems = currentSortedSubscribers.slice(
+				startIndex,
+				endIndex,
+			);
 
-			setSubscribers((prev) => [...prev, ...newItems]);
+			setSubscribers((prev) => {
+				const uniqueNewItems = newItems.filter(
+					(newItem) =>
+						!prev.some(
+							(existingItem) => existingItem.id === newItem.id,
+						),
+				);
+				return [...prev, ...uniqueNewItems];
+			});
 			setSubscribersPage((prev) => prev + 1);
-			setHasMoreSubscribers(endIndex < sortedSubscribers.length);
+			setHasMoreSubscribers(endIndex < currentSortedSubscribers.length);
 			setLoadingSubscribers(false);
 		}, 800);
-	};
+	}, [
+		loadingSubscribers,
+		subscribersPage,
+		filteredSubscribers,
+		subscribersSort,
+	]);
 
-	const loadMoreSubscriptions = () => {
+	const loadMoreSubscriptions = useCallback(() => {
 		if (loadingSubscriptions) return;
 
 		setLoadingSubscriptions(true);
 
 		setTimeout(() => {
+			const currentSortedSubscriptions = [...filteredSubscriptions].sort(
+				(a, b) => {
+					switch (subscriptionsSort) {
+						case "name-asc":
+							return `${a.firstName} ${a.lastName}`
+								.toLowerCase()
+								.localeCompare(
+									`${b.firstName} ${b.lastName}`.toLowerCase(),
+								);
+						case "name-desc":
+							return `${b.firstName} ${b.lastName}`
+								.toLowerCase()
+								.localeCompare(
+									`${a.firstName} ${a.lastName}`.toLowerCase(),
+								);
+						case "subscribers-asc":
+							return a.subscribers - b.subscribers;
+						case "subscribers-desc":
+							return b.subscribers - a.subscribers;
+						case "rating-asc":
+							return a.rating - b.rating;
+						case "rating-desc":
+							return b.rating - a.rating;
+						default:
+							return 0;
+					}
+				},
+			);
+
 			const startIndex = (subscriptionsPage - 1) * ITEMS_PER_PAGE;
 			const endIndex = startIndex + ITEMS_PER_PAGE;
-			const newItems = sortedSubscriptions.slice(startIndex, endIndex);
+			const newItems = currentSortedSubscriptions.slice(
+				startIndex,
+				endIndex,
+			);
 
-			setSubscriptions((prev) => [...prev, ...newItems]);
+			setSubscriptions((prev) => {
+				const uniqueNewItems = newItems.filter(
+					(newItem) =>
+						!prev.some(
+							(existingItem) => existingItem.id === newItem.id,
+						),
+				);
+				return [...prev, ...uniqueNewItems];
+			});
 			setSubscriptionsPage((prev) => prev + 1);
-			setHasMoreSubscriptions(endIndex < sortedSubscriptions.length);
+			setHasMoreSubscriptions(
+				endIndex < currentSortedSubscriptions.length,
+			);
 			setLoadingSubscriptions(false);
 		}, 800);
-	};
+	}, [
+		loadingSubscriptions,
+		subscriptionsPage,
+		filteredSubscriptions,
+		subscriptionsSort,
+	]);
 
-	useEffect(() => {
-		setSubscribers([]);
-		setSubscribersPage(1);
-		setHasMoreSubscribers(true);
-		loadMoreSubscribers();
-	}, [subscribersSearch, subscribersSort]);
-
-	useEffect(() => {
-		setSubscriptions([]);
-		setSubscriptionsPage(1);
-		setHasMoreSubscriptions(true);
-		loadMoreSubscriptions();
-	}, [subscriptionsSearch, subscriptionsSort]);
+	const handleUnsubscribe = (id: string) =>
+		setSubscriptions((prev) =>
+			prev.filter((subscripton) => subscripton.id !== id),
+		);
 
 	return (
 		<div className="space-y-6">
@@ -435,44 +492,55 @@ export default function SubscriptionsTab() {
 							) : (
 								<div className="space-y-4">
 									{subscriptions.map((sub) => (
-										<div
-											key={sub.id}
-											className="flex items-center justify-between border p-3 rounded-md hover:bg-muted/50 transition-colors"
+										<Link
+											to={`${ROUTES.PROFILE}/${sub.id}`}
 										>
-											<div>
-												<p className="font-semibold">
-													{sub.firstName}{" "}
-													{sub.lastName}
-												</p>
-												<div className="flex items-center text-sm text-muted-foreground space-x-3">
-													<span className="flex items-center">
-														<Users className="h-3 w-3 mr-1" />
-														{formatNumber(
-															sub.subscribers,
-														)}
-													</span>
-													<span className="flex items-center">
-														<Star className="h-3 w-3 mr-1" />
-														{sub.rating}
-													</span>
-													<span className="flex items-center">
-														<FileText className="h-3 w-3 mr-1" />
-														{formatNumber(
-															sub.reviews,
-														)}
-													</span>
-												</div>
-											</div>
-											<Button
-												variant="outline"
-												size="sm"
-												className="text-xs"
+											<div
+												key={sub.id}
+												className="flex items-center justify-between border p-3 rounded-md hover:bg-muted/50 transition-colors"
 											>
-												{t(
-													"subscriptionsTab.unsubscribe_button",
-												)}
-											</Button>
-										</div>
+												<div>
+													<p className="font-semibold">
+														{sub.firstName}{" "}
+														{sub.lastName}
+													</p>
+													<div className="flex items-center text-sm text-muted-foreground space-x-3">
+														<span className="flex items-center">
+															<Users className="h-3 w-3 mr-1" />
+															{formatNumber(
+																sub.subscribers,
+															)}
+														</span>
+														<span className="flex items-center">
+															<Star className="h-3 w-3 mr-1" />
+															{sub.rating}
+														</span>
+														<span className="flex items-center">
+															<FileText className="h-3 w-3 mr-1" />
+															{formatNumber(
+																sub.reviews,
+															)}
+														</span>
+													</div>
+												</div>
+												<Button
+													variant="outline"
+													size="sm"
+													className="text-xs"
+													onClick={(e) => {
+														e.preventDefault();
+														e.stopPropagation();
+														handleUnsubscribe(
+															sub.id,
+														);
+													}}
+												>
+													{t(
+														"subscriptionsTab.unsubscribe_button",
+													)}
+												</Button>
+											</div>{" "}
+										</Link>
 									))}
 								</div>
 							)}
@@ -602,44 +670,39 @@ export default function SubscriptionsTab() {
 							) : (
 								<div className="space-y-4">
 									{subscribers.map((sub) => (
-										<div
-											key={sub.id}
-											className="flex items-center justify-between border p-3 rounded-md hover:bg-muted/50 transition-colors"
+										<Link
+											to={`${ROUTES.PROFILE}/${sub.id}`}
 										>
-											<div>
-												<p className="font-semibold">
-													{sub.firstName}{" "}
-													{sub.lastName}
-												</p>
-												<div className="flex items-center text-sm text-muted-foreground space-x-3">
-													<span className="flex items-center">
-														<Users className="h-3 w-3 mr-1" />
-														{formatNumber(
-															sub.subscribers,
-														)}
-													</span>
-													<span className="flex items-center">
-														<Star className="h-3 w-3 mr-1" />
-														{sub.rating}
-													</span>
-													<span className="flex items-center">
-														<FileText className="h-3 w-3 mr-1" />
-														{formatNumber(
-															sub.reviews,
-														)}
-													</span>
+											<div
+												key={sub.id}
+												className="flex items-center justify-between border p-3 rounded-md hover:bg-muted/50 transition-colors"
+											>
+												<div>
+													<p className="font-semibold">
+														{sub.firstName}{" "}
+														{sub.lastName}
+													</p>
+													<div className="flex items-center text-sm text-muted-foreground space-x-3">
+														<span className="flex items-center">
+															<Users className="h-3 w-3 mr-1" />
+															{formatNumber(
+																sub.subscribers,
+															)}
+														</span>
+														<span className="flex items-center">
+															<Star className="h-3 w-3 mr-1" />
+															{sub.rating}
+														</span>
+														<span className="flex items-center">
+															<FileText className="h-3 w-3 mr-1" />
+															{formatNumber(
+																sub.reviews,
+															)}
+														</span>
+													</div>
 												</div>
 											</div>
-											<Button
-												variant="outline"
-												size="sm"
-												className="text-xs"
-											>
-												{t(
-													"subscribers.view_profile_button",
-												)}
-											</Button>
-										</div>
+										</Link>
 									))}
 								</div>
 							)}

@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import {
 	Card,
@@ -25,6 +23,8 @@ import {
 	X,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import useDebounce from "@/shared/utils/hooks/useDebounce";
+import { showSuccessToast } from "@/shared/utils/helpers/showToast";
 
 interface Category {
 	id: string;
@@ -138,6 +138,8 @@ export default function AdminPreferencesPage() {
 	const [tagsHasMore, setTagsHasMore] = useState(true);
 	const [tagsTotalCount, setTagsTotalCount] = useState(0);
 	const [tagsSearch, setTagsSearch] = useState("");
+	const debouncedCategorySearch = useDebounce(categoriesSearch);
+	const debouncedTagSearch = useDebounce(tagsSearch);
 
 	const [newCategoryName, setNewCategoryName] = useState("");
 	const [newTagName, setNewTagName] = useState("");
@@ -161,14 +163,14 @@ export default function AdminPreferencesPage() {
 		setCategoriesPage(1);
 		setCategoriesHasMore(true);
 		loadCategories(true);
-	}, [categoriesSearch]);
+	}, [debouncedCategorySearch]);
 
 	useEffect(() => {
 		setTags([]);
 		setTagsPage(1);
 		setTagsHasMore(true);
 		loadTags(true);
-	}, [tagsSearch]);
+	}, [debouncedTagSearch]);
 
 	const loadCategories = async (isInitial = false) => {
 		if (isInitial) {
@@ -261,7 +263,7 @@ export default function AdminPreferencesPage() {
 				setCategories((prev) => [newCategory, ...prev]);
 				setCategoriesTotalCount((prev) => prev + 1);
 			}
-
+			showSuccessToast("Category created successfully");
 			setNewCategoryName("");
 		} catch (error) {
 			console.error("Error adding category:", error);
@@ -291,7 +293,7 @@ export default function AdminPreferencesPage() {
 				setTags((prev) => [newTag, ...prev]);
 				setTagsTotalCount((prev) => prev + 1);
 			}
-
+			showSuccessToast("Tag created successfully");
 			setNewTagName("");
 		} catch (error) {
 			console.error("Error adding tag:", error);
@@ -365,6 +367,7 @@ export default function AdminPreferencesPage() {
 				),
 			);
 
+			showSuccessToast("Category updated successfully");
 			setEditingCategory(null);
 		} catch (error) {
 			console.error("Error updating category:", error);
@@ -397,6 +400,7 @@ export default function AdminPreferencesPage() {
 						: t,
 				),
 			);
+			showSuccessToast("Tag updated successfully");
 
 			setEditingTag(null);
 		} catch (error) {
@@ -640,7 +644,6 @@ export default function AdminPreferencesPage() {
 														t("common.loadMore", {
 															current:
 																categories.length,
-															total: categoriesTotalCount,
 														})
 													)}
 												</Button>
@@ -843,7 +846,6 @@ export default function AdminPreferencesPage() {
 														t("common.loadMore", {
 															current:
 																tags.length,
-															total: tagsTotalCount,
 														})
 													)}
 												</Button>

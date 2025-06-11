@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import {
 	Card,
@@ -36,6 +34,7 @@ import { formatNumber } from "@/shared/utils/helpers/formatNumber";
 import { Link } from "react-router-dom";
 import { ROUTES } from "@/shared/constants/routes";
 import { useTranslation } from "react-i18next";
+import useDebounce from "@/shared/utils/hooks/useDebounce";
 
 interface UserInfo {
 	id: string;
@@ -67,7 +66,7 @@ const mockUsers: UserInfo[] = [
 		email: "emma.wanderlust@example.com",
 		bio: "Adventure seeker and cultural enthusiast who has traveled to over 60 countries.",
 		location: "Barcelona, Spain",
-		joinDate: "March 2019",
+		joinDate: "March 2025",
 		profilePicture: "/placeholder.svg?height=40&width=40",
 		stats: {
 			rating: 4.9,
@@ -107,7 +106,7 @@ const mockUsers: UserInfo[] = [
 		email: "sophia.traveler@example.com",
 		bio: "Luxury travel enthusiast with a passion for fine dining and cultural experiences.",
 		location: "Paris, France",
-		joinDate: "June 2021",
+		joinDate: "June 2025",
 		profilePicture: "/placeholder.svg?height=40&width=40",
 		stats: {
 			rating: 4.8,
@@ -147,7 +146,7 @@ const mockUsers: UserInfo[] = [
 		email: "maya.adventure@example.com",
 		bio: "Extreme sports enthusiast and nature photographer. Always seeking the next adrenaline rush.",
 		location: "Vancouver, Canada",
-		joinDate: "April 2019",
+		joinDate: "April 2025",
 		profilePicture: "/placeholder.svg?height=40&width=40",
 		stats: {
 			rating: 4.6,
@@ -187,7 +186,7 @@ const mockUsers: UserInfo[] = [
 		email: "luna.photographer@example.com",
 		bio: "Travel photographer capturing the beauty of landscapes and cultures worldwide.",
 		location: "Reykjavik, Iceland",
-		joinDate: "February 2021",
+		joinDate: "February 2025",
 		profilePicture: "/placeholder.svg?height=40&width=40",
 		stats: {
 			rating: 4.9,
@@ -207,7 +206,7 @@ const mockUsers: UserInfo[] = [
 		email: "david.backpacker@example.com",
 		bio: "Budget traveler sharing tips for affordable adventures. Hostels and local transport expert.",
 		location: "Berlin, Germany",
-		joinDate: "August 2019",
+		joinDate: "March 2025",
 		profilePicture: "/placeholder.svg?height=40&width=40",
 		stats: {
 			rating: 4.3,
@@ -287,7 +286,7 @@ const mockUsers: UserInfo[] = [
 		email: "kai.mountain@example.com",
 		bio: "Alpine climbing expert and mountain rescue volunteer. Sharing high-altitude adventures.",
 		location: "Chamonix, France",
-		joinDate: "March 2019",
+		joinDate: "March 2025",
 		profilePicture: "/placeholder.svg?height=40&width=40",
 		stats: {
 			rating: 4.9,
@@ -327,7 +326,7 @@ const mockUsers: UserInfo[] = [
 		email: "omar.desert@example.com",
 		bio: "Desert guide and astronomy enthusiast. Leading expeditions under starlit skies.",
 		location: "Marrakech, Morocco",
-		joinDate: "January 2021",
+		joinDate: "January 2025",
 		profilePicture: "/placeholder.svg?height=40&width=40",
 		stats: {
 			rating: 4.7,
@@ -347,7 +346,7 @@ const mockUsers: UserInfo[] = [
 		email: "nina.forest@example.com",
 		bio: "Forest bathing guide and wildlife photographer. Connecting people with nature.",
 		location: "Vancouver, Canada",
-		joinDate: "June 2019",
+		joinDate: "June 2025",
 		profilePicture: "/placeholder.svg?height=40&width=40",
 		stats: {
 			rating: 4.8,
@@ -387,7 +386,7 @@ const mockUsers: UserInfo[] = [
 		email: "priya.spiritual@example.com",
 		bio: "Spiritual journey guide and meditation teacher. Seeking enlightenment through travel.",
 		location: "Rishikesh, India",
-		joinDate: "September 2019",
+		joinDate: "May 2025",
 		profilePicture: "/placeholder.svg?height=40&width=40",
 		stats: {
 			rating: 4.9,
@@ -447,7 +446,7 @@ const mockUsers: UserInfo[] = [
 		email: "hassan.nomad@example.com",
 		bio: "Traditional nomad guide sharing ancient routes and desert wisdom.",
 		location: "Ouarzazate, Morocco",
-		joinDate: "August 2019",
+		joinDate: "March 2025",
 		profilePicture: "/placeholder.svg?height=40&width=40",
 		stats: {
 			rating: 4.7,
@@ -487,7 +486,7 @@ const mockUsers: UserInfo[] = [
 		email: "elena.wine@example.com",
 		bio: "Sommelier and vineyard explorer. Discovering the world's finest wine regions.",
 		location: "Bordeaux, France",
-		joinDate: "May 2019",
+		joinDate: "May 2025",
 		profilePicture: "/placeholder.svg?height=40&width=40",
 		stats: {
 			rating: 4.8,
@@ -537,7 +536,7 @@ const mockUsers: UserInfo[] = [
 		email: "astrid.fjord@example.com",
 		bio: "Nordic culture expert and fjord kayaking guide. Exploring Scandinavia's natural beauty.",
 		location: "Bergen, Norway",
-		joinDate: "July 2019",
+		joinDate: "June 2025",
 		profilePicture: "/placeholder.svg?height=40&width=40",
 		stats: {
 			rating: 4.7,
@@ -557,7 +556,7 @@ const mockUsers: UserInfo[] = [
 		email: "diego.jungle@example.com",
 		bio: "Rainforest guide and ethnobotanist. Learning from indigenous communities.",
 		location: "Iquitos, Peru",
-		joinDate: "October 2019",
+		joinDate: "May 2025",
 		profilePicture: "/placeholder.svg?height=40&width=40",
 		stats: {
 			rating: 4.6,
@@ -617,7 +616,7 @@ const mockUsers: UserInfo[] = [
 		email: "sakura.temple@example.com",
 		bio: "Temple architecture historian and meditation practitioner. Exploring sacred spaces.",
 		location: "Kyoto, Japan",
-		joinDate: "April 2019",
+		joinDate: "April 2025",
 		profilePicture: "/placeholder.svg?height=40&width=40",
 		stats: {
 			rating: 4.7,
@@ -718,16 +717,16 @@ export default function UsersPage() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [sortBy, setSortBy] = useState("rating-desc");
 	const [filterBySubscription, setFilterBySubscription] = useState("all");
-
+	const debouncedSearchQuery = useDebounce(searchQuery);
 	const [filteredUsers, setFilteredUsers] = useState<UserInfo[]>([]);
 
 	useEffect(() => {
 		let filtered = mockUsers.filter((user) => {
-			if (searchQuery) {
+			if (debouncedSearchQuery) {
 				const fullName =
 					`${user.firstName} ${user.lastName}`.toLowerCase();
 				const username = user.username.toLowerCase();
-				const query = searchQuery.toLowerCase();
+				const query = debouncedSearchQuery.toLowerCase();
 				if (!fullName.includes(query) && !username.includes(query)) {
 					return false;
 				}
@@ -773,19 +772,19 @@ export default function UsersPage() {
 		setUsers([]);
 		setCurrentPage(1);
 		setHasMore(true);
-	}, [searchQuery, sortBy, filterBySubscription]);
+	}, [debouncedSearchQuery, sortBy, filterBySubscription]);
 
 	useEffect(() => {
 		if (filteredUsers.length > 0) {
 			fetchUsers(true);
-		} else if (searchQuery || filterBySubscription !== "all") {
+		} else if (debouncedSearchQuery || filterBySubscription !== "all") {
 			setLoading(false);
 			setTotalUsers(0);
-			setUsers([]); 
+			setUsers([]);
 		} else {
 			fetchUsers(true);
 		}
-	}, [filteredUsers, searchQuery, filterBySubscription]);
+	}, [filteredUsers, debouncedSearchQuery, filterBySubscription]);
 
 	const fetchUsers = async (isInitial = false) => {
 		if (isInitial) {
@@ -852,21 +851,6 @@ export default function UsersPage() {
 		searchQuery,
 		filterBySubscription !== "all",
 	].filter(Boolean).length;
-
-	if (loading) {
-		return (
-			<div className="container mx-auto px-4 py-8">
-				<div className="flex items-center justify-center h-64">
-					<div className="text-center">
-						<Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-						<p className="text-muted-foreground">
-							{t("loadingUsers")}
-						</p>
-					</div>
-				</div>
-			</div>
-		);
-	}
 
 	if (error) {
 		return (
@@ -1009,10 +993,8 @@ export default function UsersPage() {
 				<p className="text-muted-foreground">
 					{t("showingUsers", {
 						current: users.length,
-						total: totalUsers,
 					})}
-					{totalUsers !== mockUsers.length &&
-						t("matchesYourFilters", { totalFiltered: totalUsers })}
+				
 				</p>
 			</div>
 
@@ -1032,6 +1014,17 @@ export default function UsersPage() {
 							{t("clearAllFilters")}
 						</Button>
 					)}
+				</div>
+			) : loading ? (
+				<div className="container mx-auto px-4 py-8">
+					<div className="flex items-center justify-center h-64">
+						<div className="text-center">
+							<Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+							<p className="text-muted-foreground">
+								{t("loadingUsers")}
+							</p>
+						</div>
+					</div>
 				</div>
 			) : (
 				<>
@@ -1089,7 +1082,7 @@ export default function UsersPage() {
 
 									<div className="grid grid-cols-2 gap-3 mb-3">
 										<div className="flex items-center gap-2">
-											<Star className="w-4 h-4 text-yellow-500" />
+											<Star className="w-4 h-4 " />
 											<div>
 												<div className="text-sm font-semibold">
 													{user.stats.rating.toFixed(

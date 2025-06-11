@@ -1,5 +1,3 @@
-"use client";
-
 import type React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -141,20 +139,40 @@ export default function SecurityTab() {
 		}
 	};
 
+	const handleCurrentPasswordChange = (value: string) => {
+		setCurrentPassword(value);
+		if (errors.currentPassword) {
+			if (value.trim()) {
+				setErrors((prev) => ({
+					...prev,
+					currentPassword: undefined,
+				}));
+			}
+		}
+	};
+
 	const handlePasswordChange = (value: string) => {
 		setPassword(value);
-		if (errors.password && value) {
+		if (errors.password) {
 			const passwordErrors = validatePassword(value);
-			if (passwordErrors.length === 0) {
+			if (passwordErrors.length === 0 && value.trim()) {
 				setErrors((prev) => ({ ...prev, password: undefined }));
+			}
+		}
+		if (errors.passwordConfirmation) {
+			if (passwordConfirmation === value) {
+				setErrors((prev) => ({
+					...prev,
+					passwordConfirmation: undefined,
+				}));
 			}
 		}
 	};
 
 	const handlePasswordConfirmationChange = (value: string) => {
 		setPasswordConfirmation(value);
-		if (errors.passwordConfirmation && value) {
-			if (value === password) {
+		if (errors.passwordConfirmation) {
+			if (value.trim() && value === password) {
 				setErrors((prev) => ({
 					...prev,
 					passwordConfirmation: undefined,
@@ -210,7 +228,7 @@ export default function SecurityTab() {
 								type={showCurrentPassword ? "text" : "password"}
 								value={currentPassword}
 								onChange={(e) =>
-									setCurrentPassword(e.target.value)
+									handleCurrentPasswordChange(e.target.value)
 								}
 								placeholder={t(
 									"placeholders.enterCurrentPassword",

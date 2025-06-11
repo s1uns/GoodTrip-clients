@@ -25,6 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ENTITY_REVIEW, reportReasons } from "@/shared/constants/place";
 import zIndex from "@mui/material/styles/zIndex";
+import { showSuccessToast } from "@/shared/utils/helpers/showToast";
 
 interface ReportModalProps {
 	open: boolean;
@@ -59,6 +60,7 @@ export default function ReportModal({
 			// 	reportDetails,
 			// );
 		}
+		showSuccessToast("Your report was sent successfully!");
 		handleCloseDialog();
 	}, [
 		entityId,
