@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -24,7 +22,10 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Link } from "react-router-dom";
 import { ROUTES } from "@/shared/constants/routes";
-import { useTranslation } from "react-i18next"; // Import useTranslation
+import { useTranslation } from "react-i18next";
+import { useMyLocation } from "@/shared/utils/hooks/useMyLocation";
+import useDebounce from "@/shared/utils/hooks/useDebounce";
+import { Place } from "@/shared/types/Place";
 
 const userPreferences = {
 	travelTags: [
@@ -39,11 +40,6 @@ const userPreferences = {
 		"coastal-towns",
 		"wine-regions",
 	],
-	location: {
-		lat: 37.7749,
-		lng: -122.4194,
-		city: "San Francisco, CA",
-	},
 };
 
 const travelTagsOptions = [
@@ -94,11 +90,11 @@ const travelCategoriesOptions = [
 
 const distanceOptions = [
 	{ label: "None", value: "none" },
-	{ label: "Within 10 km", value: "100" },
-	{ label: "Within 25 km", value: "250" },
-	{ label: "Within 50 km", value: "500" },
-	{ label: "Within 100 km", value: "1000" },
-	{ label: "Within 250 km", value: "2500" },
+	{ label: "Within 10 km", value: "0.1" },
+	{ label: "Within 25 km", value: "0.25" },
+	{ label: "Within 50 km", value: "0.5" },
+	{ label: "Within 100 km", value: "1" },
+	{ label: "Within 250 km", value: "2.5" },
 ];
 
 const calculateDistance = (
@@ -121,16 +117,19 @@ const calculateDistance = (
 };
 
 export default function RecommendationsPage() {
-	const { t } = useTranslation(); // Initialize useTranslation
+	const { t } = useTranslation();
 	const [searchName, setSearchName] = useState("");
 	const [searchCity, setSearchCity] = useState("");
+	const [loading, setLoading] = useState(false);
+	const debouncedPlaceSearch = useDebounce(searchName);
+	const debouncedCitySearch = useDebounce(searchCity);
+
 	const [selectedTravelTags, setSelectedTravelTags] = useState<string[]>([]);
 	const [selectedTravelCategories, setSelectedTravelCategories] = useState<
 		string[]
 	>([]);
 	const [useProfilePreferences, setUseProfilePreferences] = useState(false);
 	const [distance, setDistance] = useState("none");
-	const [useMyLocation, setUseMyLocation] = useState(false);
 	const [userCoordinates, setUserCoordinates] = useState<{
 		lat: number;
 		lng: number;
@@ -140,22 +139,24 @@ export default function RecommendationsPage() {
 
 	const [sort, setSort] = useState("rating");
 	const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+	const [places, setPlaces] = useState<Place[]>([]);
+	const [useMyLocationCheckbox, setUseMyLocationCheckbox] = useState(false);
 
-	useEffect(() => {
-		if (useMyLocation) {
-			setUserCoordinates({
-				lat: userPreferences.location.lat,
-				lng: userPreferences.location.lng,
-			});
-		} else if (searchCity) {
-			setUserCoordinates({
-				lat: 34.0522,
-				lng: -118.2437,
-			});
-		} else {
-			setUserCoordinates(null);
-		}
-	}, [useMyLocation, searchCity]);
+	const { getMyLocation } = useMyLocation();
+
+	useEffect(
+		() => handleGetPlaces(),
+		[
+			debouncedCitySearch,
+			debouncedPlaceSearch,
+			showOnlyFavorites,
+			userCoordinates,
+			selectedTravelTags,
+			selectedTravelCategories,
+			distance,
+			sort,
+		],
+	);
 
 	useEffect(() => {
 		if (useProfilePreferences) {
@@ -173,6 +174,99 @@ export default function RecommendationsPage() {
 		}
 	}, [userCoordinates]);
 
+	const handleToggleLocation = async (checked: boolean) => {
+		setUseMyLocationCheckbox(checked);
+
+		if (!checked) {
+			setUserCoordinates(null);
+			return;
+		}
+
+		try {
+			const pos = await getMyLocation();
+			setUserCoordinates({
+				lat: pos.coords.latitude,
+				lng: pos.coords.longitude,
+			});
+		} catch (_) {
+			setUseMyLocationCheckbox(false);
+		}
+	};
+
+	const handleGetPlaces = () => {
+		console.log("CALLED")
+		setLoading(true);
+		const filteredAndSortedPlaces = mockedPlaces
+			.filter((place) => {
+				if (showOnlyFavorites && !favoriteIds.includes(place.id)) {
+					return false;
+				}
+
+				if (
+					searchName &&
+					!place.name.toLowerCase().includes(searchName.toLowerCase())
+				) {
+					return false;
+				}
+
+				if (
+					searchCity &&
+					!place.city.toLowerCase().includes(searchCity.toLowerCase())
+				) {
+					return false;
+				}
+
+				if (selectedTravelTags.length > 0) {
+					const hasMatchingTag = selectedTravelTags.some((tag) =>
+						place.travelTags.includes(tag),
+					);
+					if (!hasMatchingTag) return false;
+				}
+
+				if (selectedTravelCategories.length > 0) {
+					const hasMatchingCategory = selectedTravelCategories.some(
+						(category) => place.travelCategories.includes(category),
+					);
+					if (!hasMatchingCategory) return false;
+				}
+
+				if (distance !== "none" && userCoordinates) {
+					const placeDistance = calculateDistance(
+						userCoordinates.lat,
+						userCoordinates.lng,
+						place.coordinates.lat,
+						place.coordinates.lng,
+					);
+					if (placeDistance > Number.parseInt(distance)) return false;
+				}
+
+				return true;
+			})
+			.sort((a, b) => {
+				if (sort === "rating") return b.rating - a.rating;
+				if (sort === "name") return a.name.localeCompare(b.name);
+				if (sort === "distance" && userCoordinates) {
+					const distanceA = calculateDistance(
+						userCoordinates.lat,
+						userCoordinates.lng,
+						a.coordinates.lat,
+						a.coordinates.lng,
+					);
+					const distanceB = calculateDistance(
+						userCoordinates.lat,
+						userCoordinates.lng,
+						b.coordinates.lat,
+						b.coordinates.lng,
+					);
+					return distanceA - distanceB;
+				}
+				return 0;
+			});
+		setLoading(false);
+
+		setPlaces(filteredAndSortedPlaces);
+	};
+
 	const clearFilters = () => {
 		setSearchName("");
 		setSearchCity("");
@@ -180,7 +274,8 @@ export default function RecommendationsPage() {
 		setSelectedTravelCategories([]);
 		setUseProfilePreferences(false);
 		setDistance("none");
-		setUseMyLocation(false);
+		setUserCoordinates(null);
+		setUseMyLocationCheckbox(false);
 		setShowOnlyFavorites(false);
 	};
 
@@ -191,73 +286,6 @@ export default function RecommendationsPage() {
 			setFavoriteIds([...favoriteIds, placeId]);
 		}
 	};
-
-	const filteredAndSortedPlaces = places
-		.filter((place) => {
-			if (showOnlyFavorites && !favoriteIds.includes(place.id)) {
-				return false;
-			}
-
-			if (
-				searchName &&
-				!place.name.toLowerCase().includes(searchName.toLowerCase())
-			) {
-				return false;
-			}
-
-			if (
-				searchCity &&
-				!place.city.toLowerCase().includes(searchCity.toLowerCase())
-			) {
-				return false;
-			}
-
-			if (selectedTravelTags.length > 0) {
-				const hasMatchingTag = selectedTravelTags.some((tag) =>
-					place.travelTags.includes(tag),
-				);
-				if (!hasMatchingTag) return false;
-			}
-
-			if (selectedTravelCategories.length > 0) {
-				const hasMatchingCategory = selectedTravelCategories.some(
-					(category) => place.travelCategories.includes(category),
-				);
-				if (!hasMatchingCategory) return false;
-			}
-
-			if (distance !== "none" && userCoordinates) {
-				const placeDistance = calculateDistance(
-					userCoordinates.lat,
-					userCoordinates.lng,
-					place.coordinates.lat,
-					place.coordinates.lng,
-				);
-				if (placeDistance > Number.parseInt(distance)) return false;
-			}
-
-			return true;
-		})
-		.sort((a, b) => {
-			if (sort === "rating") return b.rating - a.rating;
-			if (sort === "name") return a.name.localeCompare(b.name);
-			if (sort === "distance" && userCoordinates) {
-				const distanceA = calculateDistance(
-					userCoordinates.lat,
-					userCoordinates.lng,
-					a.coordinates.lat,
-					a.coordinates.lng,
-				);
-				const distanceB = calculateDistance(
-					userCoordinates.lat,
-					userCoordinates.lng,
-					b.coordinates.lat,
-					b.coordinates.lng,
-				);
-				return distanceA - distanceB;
-			}
-			return 0;
-		});
 
 	const activeFiltersCount = [
 		searchName,
@@ -341,11 +369,13 @@ export default function RecommendationsPage() {
 														)
 													}
 													className="pl-8"
-													disabled={useMyLocation}
+													disabled={Boolean(
+														userCoordinates,
+													)}
 												/>
 											</div>
 										</TooltipTrigger>
-										{useMyLocation && (
+										{userCoordinates && (
 											<TooltipContent>
 												<p>
 													{t(
@@ -369,13 +399,11 @@ export default function RecommendationsPage() {
 											<div>
 												<Checkbox
 													id="use-my-location"
-													checked={useMyLocation}
-													onCheckedChange={(
-														checked: boolean,
-													) =>
-														setUseMyLocation(
-															checked === true,
-														)
+													checked={
+														useMyLocationCheckbox
+													}
+													onCheckedChange={
+														handleToggleLocation
 													}
 													disabled={!!searchCity}
 												/>
@@ -400,11 +428,6 @@ export default function RecommendationsPage() {
 										"recommendationsPage.useMyLocationLabel",
 									)}
 								</Label>
-								{useMyLocation && (
-									<span className="text-sm text-muted-foreground">
-										({userPreferences.location.city})
-									</span>
-								)}
 							</div>
 
 							<div className="flex items-center space-x-2">
@@ -584,158 +607,216 @@ export default function RecommendationsPage() {
 					</div>
 				</CardContent>
 			</Card>
+			{loading ? (
+				<div className="container mx-auto px-4 py-8">
+					<div className="flex items-center justify-center h-64">
+						<div className="text-center">
+							<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+							<p className="text-muted-foreground">
+								{t("placeView.loadingDetails")}
+							</p>
+						</div>
+					</div>
+				</div>
+			) : (
+				<>
+					<div className="mb-4">
+						<p className="text-muted-foreground">
+							{t("recommendationsPage.showingPlaces", {
+								filteredCount: places.length,
+								totalCount: places.length,
+							})}
+						</p>
+					</div>
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+						{places.map((place) => (
+							<Link
+								to={`${ROUTES.PLACES}/${place.id}`}
+								key={place.id}
+							>
+								<Card className="hover:shadow-lg transition-shadow">
+									<CardHeader className="p-0 relative">
+										<img
+											src={
+												place.image ||
+												"/placeholder.svg"
+											}
+											alt={place.name}
+											className="w-full h-48 object-cover rounded-t-lg"
+										/>
+										<div
+											className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md cursor-pointer hover:bg-gray-50 transition-colors"
+											onClick={(e) => {
+												e.stopPropagation();
+												e.preventDefault();
+												toggleFavorite(place.id);
+											}}
+										>
+											<Heart
+												className={`w-4 h-4 ${
+													favoriteIds.includes(
+														place.id,
+													)
+														? "text-red-500 fill-current"
+														: "text-gray-400"
+												}`}
+											/>
+										</div>
+									</CardHeader>
+									<CardContent className="p-4">
+										<CardTitle className="text-xl mb-2">
+											{place.name}
+										</CardTitle>
+										<div className="flex items-center mb-2 text-muted-foreground">
+											<MapPin className="w-4 h-4 mr-1" />
+											<span className="text-sm">
+												{place.city}
+											</span>
+										</div>
+										<div className="flex items-center mb-3">
+											<Star className="w-5 h-5 fill-current" />
+											<span className="ml-1 font-semibold">
+												{place.rating.toFixed(1)}
+											</span>
+											{distance !== "none" &&
+												userCoordinates && (
+													<span className="ml-auto text-sm text-muted-foreground">
+														{calculateDistance(
+															userCoordinates.lat,
+															userCoordinates.lng,
+															place.coordinates
+																.lat,
+															place.coordinates
+																.lng,
+														).toFixed(1)}{" "}
+														{t(
+															"recommendationsPage.distanceUnit",
+														)}
+													</span>
+												)}
+										</div>
 
-			<div className="mb-4">
-				<p className="text-muted-foreground">
-					{t("recommendationsPage.showingPlaces", {
-						filteredCount: filteredAndSortedPlaces.length,
-						totalCount: places.length,
-					})}
-				</p>
-			</div>
+										<div className="mb-2">
+											<div className="flex flex-wrap gap-1">
+												{place.travelTags
+													.slice(0, 3)
+													.map((tag) => (
+														<span
+															key={tag}
+															className="px-2 py-1 bg-primary/10 text-primary rounded-full text-xs"
+														>
+															{travelTagsOptions.find(
+																(opt) =>
+																	opt.value ===
+																	tag,
+															)?.label || tag}
+														</span>
+													))}
+												{place.travelTags.length >
+													3 && (
+													<span className="px-2 py-1 bg-muted text-muted-foreground rounded-full text-xs">
+														{t(
+															"recommendationsPage.moreTags",
+															{
+																count:
+																	place
+																		.travelTags
+																		.length -
+																	3,
+															},
+														)}
+													</span>
+												)}
+											</div>
+										</div>
 
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-				{filteredAndSortedPlaces.map((place) => (
-					<Link to={`${ROUTES.PLACES}/${place.id}`} key={place.id}>
-						<Card className="hover:shadow-lg transition-shadow">
-							<CardHeader className="p-0 relative">
-								<img
-									src={place.image || "/placeholder.svg"}
-									alt={place.name}
-									className="w-full h-48 object-cover rounded-t-lg"
-								/>
-								<div
-									className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md cursor-pointer hover:bg-gray-50 transition-colors"
-									onClick={(e) => {
-										e.stopPropagation();
-										e.preventDefault();
-										toggleFavorite(place.id);
-									}}
-								>
-									<Heart
-										className={`w-4 h-4 ${
-											favoriteIds.includes(place.id)
-												? "text-red-500 fill-current"
-												: "text-gray-400"
-										}`}
-									/>
-								</div>
-							</CardHeader>
-							<CardContent className="p-4">
-								<CardTitle className="text-xl mb-2">
-									{place.name}
-								</CardTitle>
-								<div className="flex items-center mb-2 text-muted-foreground">
-									<MapPin className="w-4 h-4 mr-1" />
-									<span className="text-sm">
-										{place.city}
-									</span>
-								</div>
-								<div className="flex items-center mb-3">
-									<Star className="w-5 h-5 text-yellow-400 fill-current" />
-									<span className="ml-1 font-semibold">
-										{place.rating.toFixed(1)}
-									</span>
-									{distance !== "none" && userCoordinates && (
-										<span className="ml-auto text-sm text-muted-foreground">
-											{calculateDistance(
-												userCoordinates.lat,
-												userCoordinates.lng,
-												place.coordinates.lat,
-												place.coordinates.lng,
-											).toFixed(1)}{" "}
-											{t(
-												"recommendationsPage.distanceUnit",
-											)}
-										</span>
-									)}
-								</div>
-
-								<div className="mb-2">
-									<div className="flex flex-wrap gap-1">
-										{place.travelTags
-											.slice(0, 3)
-											.map((tag) => (
-												<span
-													key={tag}
-													className="px-2 py-1 bg-primary/10 text-primary rounded-full text-xs"
-												>
+										<div className="flex flex-wrap gap-1">
+											{place.travelCategories
+												.slice(0, 2)
+												.map((category) => (
+													<span
+														key={category}
+														className="px-2 py-1 bg-secondary/10 text-secondary-foreground rounded-full text-xs"
+													>
+														{travelCategoriesOptions.find(
+															(opt) =>
+																opt.value ===
+																category,
+														)?.label || category}
+													</span>
+												))}
+											{place.travelCategories.length >
+												2 && (
+												<span className="px-2 py-1 bg-muted text-muted-foreground rounded-full text-xs">
 													{t(
-														`travelTagsOptions.${tag}`,
+														"recommendationsPage.moreCategories",
+														{
+															count:
+																place
+																	.travelCategories
+																	.length - 2,
+														},
 													)}
 												</span>
-											))}
-										{place.travelTags.length > 3 && (
-											<span className="px-2 py-1 bg-muted text-muted-foreground rounded-full text-xs">
-												{t(
-													"recommendationsPage.moreTags",
-													{
-														count:
-															place.travelTags
-																.length - 3,
-													},
-												)}
-											</span>
-										)}
-									</div>
-								</div>
-
-								<div className="flex flex-wrap gap-1">
-									{place.travelCategories
-										.slice(0, 2)
-										.map((category) => (
-											<span
-												key={category}
-												className="px-2 py-1 bg-secondary/10 text-secondary-foreground rounded-full text-xs"
-											>
-												{t(
-													`travelCategoriesOptions.${category}`,
-												)}
-											</span>
-										))}
-									{place.travelCategories.length > 2 && (
-										<span className="px-2 py-1 bg-muted text-muted-foreground rounded-full text-xs">
-											{t(
-												"recommendationsPage.moreCategories",
-												{
-													count:
-														place.travelCategories
-															.length - 2,
-												},
 											)}
-										</span>
-									)}
-								</div>
-							</CardContent>
-						</Card>
-					</Link>
-				))}
-			</div>
-
-			{filteredAndSortedPlaces.length === 0 && (
-				<div className="text-center py-12">
-					<div className="text-muted-foreground mb-4">
-						<Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
-						<h3 className="text-lg font-semibold mb-2">
-							{t("recommendationsPage.noPlacesFoundTitle")}
-						</h3>
-						<p>{t("recommendationsPage.noPlacesFoundMessage")}</p>
+										</div>
+									</CardContent>
+								</Card>
+							</Link>
+						))}
 					</div>
-					<Button variant="outline" onClick={clearFilters}>
-						{t("recommendationsPage.clearAllFiltersButton")}
-					</Button>
-				</div>
+					{places.length === 0 && (
+						<div className="text-center py-12">
+							<div className="text-muted-foreground mb-4">
+								<Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
+								<h3 className="text-lg font-semibold mb-2">
+									{t(
+										"recommendationsPage.noPlacesFoundTitle",
+									)}
+								</h3>
+								<p>
+									{t(
+										"recommendationsPage.noPlacesFoundMessage",
+									)}
+								</p>
+							</div>
+							<Button variant="outline" onClick={clearFilters}>
+								{t("recommendationsPage.clearAllFiltersButton")}
+							</Button>
+						</div>
+					)}
+				</>
 			)}
 		</div>
 	);
 }
 
-const places = [
+const mockedPlaces = [
 	{
-		id: 1,
+		id: "1",
+		name: "Pinchuk Art Centre",
+		address: "Velyka Vasylkivska St., Baseyna St., 1, 3-2, Kyiv, 01004",
+		rating: 4,
+		totalReviews: 4,
+		travelTags: [
+			"relaxation-wellness",
+			"family-travel",
+			"events-festivals",
+		],
+		city: "Kyiv",
+		travelCategories: ["parks", "tourist_attraction"],
+		types: ["park", "tourist_attraction"],
+		coordinates: {
+			lat: 50.44177930000001,
+			lng: 30.5211407,
+		},
+		image: "https://wiki.kubg.edu.ua/images/c/c3/218-pinchuk-art-centre-75-1448354257.jpg",
+	},
+	{
+		id: "2231",
 		name: "VDNH (Exhibition Center of Ukraine)",
 		city: "Kyiv",
-		image: "https://www.alamy.com/stock-photo/soviet-vdnh-architecture-in-kiev.html",
+		image: "https://upload.wikimedia.org/wikipedia/commons/0/07/%D0%9A%D0%BE%D0%BC%D0%BF%D0%BB%D0%B5%D0%BA%D1%81_%D0%95%D0%BA%D1%81%D0%BF%D0%BE%D1%86%D0%B5%D0%BD%D1%82%D1%80_%D0%A3%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D0%B8.jpg",
 		travelTags: [
 			"relaxation-wellness",
 			"family-travel",
@@ -759,7 +840,7 @@ const places = [
 		id: 3,
 		name: "Pyrohiv Museum",
 		city: "Kyiv",
-		image: "https://www.shutterstock.com/search/pyrohiv-museum",
+		image: "https://lh3.googleusercontent.com/gps-cs-s/AC9h4npCBjllcM0LKQtHuCNKm_sMgoj5mjqktWV_mhIExEDDJhCSmxOf_CxyyzhHLWRwAv-kLJkwgeLyqOftkGqva27MdDwfAG4EsHYUGD88Hf5WhURjr1tHxOH5HUwj5DFojvp4EiFx=s1360-w1360-h1020-rw",
 		travelTags: ["historical-sites", "photography", "nature-wildlife"],
 		travelCategories: ["open-air-museums", "parks"],
 		rating: 4.7,
@@ -769,9 +850,9 @@ const places = [
 		id: 4,
 		name: "Natalka Park",
 		city: "Kyiv",
-		image: "https://scontent.fplv1-1.fna.fbcdn.net/v/t39.30808-6/473779983_1012373487584",
+		image: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1c/f8/e0/46/caption.jpg?w=900&h=500&s=1",
 		travelTags: ["nature-wildlife", "relaxation-wellness", "family-travel"],
-		travelCategories: ["parks", "river-banks"],
+		travelCategories: ["parks"],
 		rating: 4.9,
 		coordinates: { lat: 50.4907, lng: 30.5401 },
 	},
@@ -779,7 +860,7 @@ const places = [
 		id: 5,
 		name: "Lviv Old Town",
 		city: "Lviv",
-		image: "https://www.shutterstock.com/search/lviv-old-town",
+		image: "https://whc.unesco.org/uploads/thumbs/site_0865_0002-750-750-20151104125432.jpg",
 		travelTags: [
 			"historical-sites",
 			"cultural-immersion",
@@ -794,7 +875,7 @@ const places = [
 		id: 6,
 		name: "Carpathian Mountains",
 		city: "Zakarpattia Oblast",
-		image: "https://www.shutterstock.com/search/carpathian-mountains",
+		image: "https://lp-cms-production.imgix.net/2023-10/iStock-1657465139-RFC.jpg",
 		travelTags: [
 			"adventure-sports",
 			"nature-wildlife",
@@ -809,7 +890,7 @@ const places = [
 		id: 7,
 		name: "Odesa Opera and Ballet Theater",
 		city: "Odesa",
-		image: "https://www.shutterstock.com/search/odesa-opera-ballet-theater",
+		image: "https://lh3.googleusercontent.com/gps-cs-s/AC9h4npqBXvoPIb4BMqyXt56LOZiEL1XGqHC6bJr_ySHXMNgdDgB81EdEfO253D2kGwyQzMR4smmZewf6W9g5JaL9ccnCfJuYaJjmy8fDZZ7hM-i3KP0Go0lszeabhstG1xWSFyi3uRIMw=s1360-w1360-h1020-rw",
 		travelTags: [
 			"art-museums",
 			"cultural-immersion",
@@ -824,7 +905,7 @@ const places = [
 		id: 8,
 		name: "Kamianets-Podilskyi Castle",
 		city: "Kamianets-Podilskyi",
-		image: "https://www.shutterstock.com/search/kamianets-podilskyi-castle",
+		image: "https://lh3.googleusercontent.com/gps-cs-s/AC9h4npwahLQkdaWj4XrQ3PFKIVyGGJXnp0jOr3YFKH_KWKA5TKbXB4CMWHkX-dd9sK7HbqjPR-myFK_L2L1DHx6iVFPPy00dbPyEjit2ez8yOTLVE1mpp8o9s3IwhzMqq_zsZBoduW2=s1360-w1360-h1020-rw",
 		travelTags: [
 			"historical-sites",
 			"architecture",
@@ -854,7 +935,7 @@ const places = [
 		id: 10,
 		name: "Sofiyivsky Park",
 		city: "Uman",
-		image: "https://www.shutterstock.com/search/sofiyivsky-park",
+		image: "https://cdn.tsunamipanel.com/100594/media/galleries/1920/sofievka-park-01.jpg",
 		travelTags: ["nature-wildlife", "relaxation-wellness", "photography"],
 		travelCategories: ["parks", "botanical-gardens"],
 		rating: 4.8,

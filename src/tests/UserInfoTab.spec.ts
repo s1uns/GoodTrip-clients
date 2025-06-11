@@ -7,7 +7,7 @@ const mockUser = {
 	bio: "Traveler and photographer",
 	rating: 4.5,
 	reviewsCount: 10,
-	joinDate: "2023-01-15T00:00:00.000Z",
+	joinDate: "2025-01-15T00:00:00.000Z",
 };
 
 test.describe("UserInfoTab E2E", () => {
@@ -44,7 +44,7 @@ test.describe("UserInfoTab E2E", () => {
 		await expect(page.locator("text=4.5 User Rating")).toBeVisible();
 		await expect(page.locator("text=10 Reviews Written")).toBeVisible();
 
-		await expect(page.locator(`text=Joined on 15 Jan 2023`)).toBeVisible();
+		await expect(page.locator(`text=Joined on 15 Jan 2025`)).toBeVisible();
 	});
 
 	test("enables inputs after clicking Edit and allows editing", async ({

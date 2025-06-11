@@ -1,5 +1,7 @@
 {
 	"login": "Log In",
+	"saving": "Saving...",
+	"loginProcess": "Logging...",
 	"places": "Places",
 	"profile": "Profile",
 	"logout": "Logout",
@@ -33,7 +35,12 @@
 		"currentPasswordRequired": "Current password is required",
 		"passwordRequired": "The password is required",
 		"confirmPasswordRequired": "Confirm your password!",
-		"passwordsMismatch": "Passwords mismatch."
+		"passwordsMismatch": "Passwords mismatch.",
+		"geolocationNotSupported": "Geolocation is not supported by your browser.",
+		"locationPermissionDenied": "Location permission was denied.",
+		"positionUnavailable": "Location position is unavailable.",
+		"locationRequestTimeout": "Location request timed out.",
+		"unknownLocationError": "An unknown error occurred while getting location."
 	},
 	"restorePassword": "Restore Password",
 	"restorePasswordDescription": "Enter your email and we'll send you a code.",
@@ -55,8 +62,9 @@
 		"about": "About",
 		"adding": "Adding...",
 		"loading": "Loading...",
-		"loadMore": "Load More ({{current}} of {{total}})",
-		"save": "Save"
+		"loadMore": "Load More ({{current}",
+		"save": "Save",
+		"itemTypeDefault": "Item"
 	},
 	"error": {
 		"invalidCode": "Invalid code"
@@ -78,12 +86,13 @@
 		"selectDistancePlaceholder": "Select distance",
 		"distanceOption": {
 			"none": "None",
-			"100": "100 m",
-			"250": "250 m",
-			"500": "500 m",
-			"1000": "1 km",
-			"2500": "2.5 km"
+			"0.1": "100 m",
+			"0.25": "250 m",
+			"0.5": "500 m",
+			"1": "1 km",
+			"2.5": "2.5 km"
 		},
+		"loadingDetails": "Loading places...",
 		"enableDistanceFilterMessage": "Enter a city or use your location to enable",
 		"useProfilePreferencesTitle": "Use My Profile Preferences",
 		"useProfilePreferencesDescription": "Automatically fill filters with your saved travel preferences",
@@ -130,7 +139,7 @@
 	"leastReviews": "Least Reviews",
 	"nameAsc": "Name (A-Z)",
 	"nameDesc": "Name (Z-A)",
-	"showingUsers": "Showing {{current}} of {{total}} users",
+	"showingUsers": "Showing {{current}} users",
 	"matchesYourFilters": "({{totalFiltered}} match your filters)",
 	"noUsersFound": "No users found",
 	"tryAdjustingFilters": "Try adjusting your search or filter criteria",
@@ -255,6 +264,7 @@
 
 	"reply": "Reply",
 	"placeView": {
+		"placeLinkCopied": "Place link copied to clipboard!",
 		"loadingDetails": "Loading place details...",
 		"placeNotFoundTitle": "Place not found",
 		"placeNotFoundDescription": "The place you are looking for does not exist or has been removed.",
@@ -417,7 +427,7 @@
 		"reviewItem": "review",
 		"replyItem": "Reply",
 		"replies": "Replies",
-		"showingReports": "Showingreports",
+		"showingReports": "Showing reports",
 		"matchFilters": "({{totalFiltered}} matching your filters)",
 		"noReportsFoundTitle": "No Reports Found",
 		"noReportsAdjustFilter": "Try adjusting your search or filter criteria",
@@ -492,7 +502,7 @@
 			"sortByNameAsc": "Name (A-Z)",
 			"sortByNameDesc": "Name (Z-A)"
 		},
-		"showingUsers": "Showing {{current}} of {{total}} users",
+		"showingUsers": "Showing {{current}} users",
 		"matchingFilters": " ({{total}} match your filters)",
 		"noUsersFound": {
 			"title": "No users found",
@@ -518,8 +528,20 @@
 		"loadMore": {
 			"loading": "Loading more users...",
 			"button": "Load More Users",
-			"count": "({{current}} of {{total}})",
+			"count": "({{current}}",
 			"endReached": "You've reached the end! Showing all {{count}} users."
 		}
+	},
+	"notifications": {
+		"requestingLocation": "Requesting your location...",
+		"locationReceived": "Location successfully received!"
+	},
+	"dialog": {
+		"warning": "Warning",
+		"destructiveWarningMessage": "This action cannot be undone. All associated data will be permanently removed.",
+		"cancelButton": "Cancel",
+		"deletingButton": "Deleting...",
+		"deleteButton": "Delete",
+		"confirmButton": "Confirm"
 	}
 }

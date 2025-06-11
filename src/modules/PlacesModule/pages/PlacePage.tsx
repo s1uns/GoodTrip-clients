@@ -14,6 +14,7 @@ import {
 import { Review } from "@/shared/types/Review";
 import { Reply } from "@/shared/types/Reply";
 import { useTranslation } from "react-i18next";
+import { showSuccessToast } from "@/shared/utils/helpers/showToast";
 
 const placeTypesMapping: Record<string, string> = {
 	amusement_park: "Amusement Park",
@@ -88,7 +89,7 @@ const mockReviews: Review[] = [
 		date: "2025-01-15",
 		text: "Absolutely stunning place! The scenery is breathtaking and there's so much to explore. Perfect for families and couples alike. Highly recommend visiting during sunset for the best views.",
 		images: [
-			"https://www.pca-stream.com/wp-content/uploads/2023/12/13-2560x1440.jpg",
+			"https://comers.com.ua/wp-content/uploads/2014/09/OD-AU297_RUSMUS_P_20121115132702.jpg",
 			"https://lh3.googleusercontent.com/p/AF1QipNzsukYDRhMxtGMmI0YQFIMWYFdKgEVRu0ozQvi=s1360-w1360-h1020-rw",
 		],
 		likes: 24,
@@ -109,7 +110,7 @@ const mockReviews: Review[] = [
 			{
 				id: "103",
 				userId: "currentUser",
-				username: "johndoe",
+				username: "illiateliuk",
 				date: "2025-01-17",
 				text: "@Mike Chen, Glad you liked it too!",
 				isOwn: true,
@@ -125,7 +126,7 @@ const mockReviews: Review[] = [
 		date: "2025-01-10",
 		text: "Great place to visit, but it can get quite crowded during peak hours. The facilities are well-maintained and the staff is friendly.",
 		images: [],
-		likes: 1800,
+		likes: 18,
 		dislikes: 1,
 		isLiked: true,
 		isDisliked: false,
@@ -134,12 +135,14 @@ const mockReviews: Review[] = [
 	},
 	{
 		id: "3",
-		userId: "currentUser",
-		username: "johndoe",
+		userId: "somebody",
+		username: "peterparker",
 		rating: 5,
 		date: "2025-01-08",
 		text: "One of my favorite places in the city! I come here every weekend for jogging and it never gets old. The atmosphere is always peaceful and relaxing.",
-		images: ["/placeholder.svg?height=200&width=300"],
+		images: [
+			"https://pinchukartcentre.org/imglib/_newimage/photo_and_video/photo/25549/25574/ill_2188_1.jpg",
+		],
 		likes: 12,
 		dislikes: 0,
 		isLiked: false,
@@ -200,8 +203,8 @@ const PlaceView = () => {
 						name: "Pinchuk Art Centre",
 						address:
 							"Velyka Vasylkivska St., Baseyna St., 1, 3-2, Kyiv, 01004",
-						rating: 4.6,
-						totalReviews: 89234,
+						rating: 4,
+						totalReviews: 4,
 						types: ["park", "tourist_attraction"],
 						coordinates: {
 							lat: 50.44177930000001,
@@ -250,11 +253,12 @@ const PlaceView = () => {
 
 	const handleShare = () => {
 		navigator.clipboard.writeText(window.location.href);
+		showSuccessToast(t("placeView.placeLinkCopied"));
 	};
 
 	const handleOpenInGoogleMaps = () =>
 		window.open(
-			`https://www.google.com/maps/search/?api=1&query=$${place.coordinates.lat},${place.coordinates.lng}`,
+			`https://www.google.com/maps/search/?api=1&query=${place.coordinates.lat},${place.coordinates.lng}`,
 			"_blank",
 		);
 
@@ -270,7 +274,7 @@ const PlaceView = () => {
 			const review = {
 				id: Date.now().toString(),
 				userId: "currentUser",
-				username: "johndoe",
+				username: "illiateliuk",
 				rating: rating,
 				date: new Date().toISOString().split("T")[0],
 				text: text,
@@ -285,6 +289,7 @@ const PlaceView = () => {
 
 			setReviews([review, ...reviews]);
 			setShowReviewForm(false);
+			showSuccessToast("Review created successfully!");
 		} catch (error) {
 			console.error("Error submitting review:", error);
 		} finally {
@@ -340,6 +345,7 @@ const PlaceView = () => {
 					: review,
 			),
 		);
+		showSuccessToast("Reply added successfully!");
 	};
 
 	const handleEditReview = (
@@ -360,12 +366,14 @@ const PlaceView = () => {
 					: review,
 			),
 		);
+		showSuccessToast("Review updated successfully!");
 
 		setEditingReview(null);
 	};
 
 	const handleDeleteReview = (reviewId: string) => {
 		setReviews((prev) => prev.filter((review) => review.id !== reviewId));
+		showSuccessToast("Review deleted successfully!");
 	};
 
 	const handleEditReply = useCallback(
@@ -384,6 +392,7 @@ const PlaceView = () => {
 						: review,
 				),
 			);
+			showSuccessToast("Reply updated successfully!");
 		},
 		[],
 	);
@@ -402,6 +411,7 @@ const PlaceView = () => {
 						: review,
 				),
 			);
+			showSuccessToast("Reply deleted successfully!");
 		},
 		[],
 	);

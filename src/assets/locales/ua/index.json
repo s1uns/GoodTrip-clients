@@ -1,5 +1,7 @@
 {
 	"login": "Вхід",
+	"loginProcess": "Зачекайте...",
+	"saving": "Зберігаємо...",
 	"places": "Місця",
 	"profile": "Профіль",
 	"logout": "Вийти",
@@ -33,7 +35,12 @@
 		"currentPasswordRequired": "Поточний пароль обов'язковий",
 		"passwordRequired": "Пароль обов'язковий",
 		"confirmPasswordRequired": "Підтвердіть свій пароль!",
-		"passwordsMismatch": "Паролі не збігаються."
+		"passwordsMismatch": "Паролі не збігаються.",
+		"geolocationNotSupported": "Ваш браузер не підтримує геолокацію.",
+		"locationPermissionDenied": "Доступ до місцезнаходження було заборонено.",
+		"positionUnavailable": "Неможливо визначити місцезнаходження.",
+		"locationRequestTimeout": "Час очікування на визначення місцезнаходження вичерпано.",
+		"unknownLocationError": "Сталася невідома помилка при отриманні місцезнаходження."
 	},
 	"restorePassword": "Відновлення пароля",
 	"restorePasswordDescription": "Введіть вашу електронну пошту, і ми надішлемо вам код.",
@@ -55,8 +62,9 @@
 		"about": "Про",
 		"adding": "Додавання...",
 		"loading": "Завантаження...",
-		"loadMore": "Завантажити ще ({{current}} з {{total}})",
-		"save": "Зберегти"
+		"loadMore": "Завантажити ще",
+		"save": "Зберегти",
+		"itemTypeDefault": "Елемент"
 	},
 	"error": {
 		"invalidCode": "Невірний код"
@@ -76,13 +84,14 @@
 		"distanceFilterLabel": "Фільтр відстані",
 		"enableDistanceFilterTooltip": "Введіть місто або використайте своє місцезнаходження, щоб увімкнути фільтрацію за відстанню",
 		"selectDistancePlaceholder": "Виберіть відстань",
+		"loadingDetails": "Завантаження локацій...",
 		"distanceOption": {
 			"none": "Жодна",
-			"100": "100 м",
-			"250": "250 м",
-			"500": "500 м",
-			"1000": "1 км",
-			"2500": "2.5 км"
+			"0.1": "100 м",
+			"0.25": "250 м",
+			"0.5": "500 м",
+			"1": "1 км",
+			"2.5": "2.5 км"
 		},
 		"enableDistanceFilterMessage": "Введіть місто або використайте своє місцезнаходження, щоб увімкнути",
 		"useProfilePreferencesTitle": "Використовувати мої налаштування профілю",
@@ -251,9 +260,10 @@
 		"profile": "Профіль",
 		"users": "Користувачі",
 		"preferences": "Вподобання",
-		"reports": "Звіти"
+		"reports": "Скарги"
 	},
 	"placeView": {
+		"placeLinkCopied": "Посилання на локацію скопійовано!",
 		"loadingDetails": "Завантаження деталей місця...",
 		"placeNotFoundTitle": "Місце не знайдено",
 		"placeNotFoundDescription": "Місце, яке ви шукаєте, не існує або було видалено.",
@@ -396,7 +406,7 @@
 		"delete_description": "Ви впевнені, що хочете видалити це місце? Це остаточно видалить місце та всі пов’язані дані, включаючи відгуки, оцінки та взаємодію з користувачами."
 	},
 	"reportsPage": {
-		"loadingReports": "Завантаження скарн...",
+		"loadingReports": "Завантаження скарг...",
 		"reportsManagementTitle": "Управління скаргами",
 		"reportsManagementDescription": "Перегляд та керування скаргами користувачів для модерації контенту",
 		"clearFiltersButton": "Очистити фільтри ({{count}})",
@@ -417,9 +427,9 @@
 		"reviewItem": "відгук",
 		"showingReports": "Показано {{current}} скарг",
 		"matchFilters": " ({{totalFiltered}} відповідають вашим фільтрам)",
-		"noReportsFoundTitle": "Звіти не знайдено",
+		"noReportsFoundTitle": "Скарги не знайдено",
 		"noReportsAdjustFilter": "Спробуйте змінити критерії пошуку або фільтрації",
-		"noReportsAvailable": "Звіти недоступні",
+		"noReportsAvailable": "Скарги недоступні",
 		"clearAllFiltersButton": "Очистити всі фільтри",
 		"reviewType": "відгук",
 		"replyItem": "коментар",
@@ -491,7 +501,7 @@
 			"sortByNameAsc": "Ім'я (А-Я)",
 			"sortByNameDesc": "Ім'я (Я-А)"
 		},
-		"showingUsers": "Показано {{current}} з {{total}} користувачів",
+		"showingUsers": "Показано {{current}} користувачів",
 		"matchingFilters": " ({{total}} відповідають вашим фільтрам)",
 		"noUsersFound": {
 			"title": "Користувачів не знайдено",
@@ -517,8 +527,20 @@
 		"loadMore": {
 			"loading": "Завантаження інших користувачів...",
 			"button": "Завантажити більше користувачів",
-			"count": "({{current}} з {{total}})",
+			"count": "({{current}}",
 			"endReached": "Ви досягли кінця! Показано всіх {{count}} користувачів."
 		}
+	},
+	"notifications": {
+		"requestingLocation": "Запитуємо ваше місцезнаходження...",
+		"locationReceived": "Місцезнаходження успішно отримано!"
+	},
+	"dialog": {
+		"warning": "Попередження",
+		"destructiveWarningMessage": "Цю дію не можна скасувати. Усі пов'язані дані буде видалено назавжди.",
+		"cancelButton": "Скасувати",
+		"deletingButton": "Видалення...",
+		"deleteButton": "Видалити",
+		"confirmButton": "Підтвердити"
 	}
 }

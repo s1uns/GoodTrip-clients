@@ -16,6 +16,7 @@ import { Edit, Save, Star } from "lucide-react";
 import { useUserStore } from "@/store/userStore";
 import { convertDateToDDMonYYYY } from "@/shared/utils/helpers/convertDateToDDMonYYYY";
 import { useTranslation } from "react-i18next";
+import { showSuccessToast } from "@/shared/utils/helpers/showToast";
 
 const travelPreferencesOptions = [
 	{ label: "Adventure", value: "adventure" },
@@ -44,6 +45,8 @@ const travelCategoriesOptions = [
 ];
 
 export default function UserInfoTab() {
+	const [loading, setLoading] = useState(false);
+	const [saving, setSaving] = useState(false);
 	const { t, i18n } = useTranslation();
 	const [isEditing, setIsEditing] = useState(false);
 	const user = useUserStore((state: any) => state.user);
@@ -59,29 +62,49 @@ export default function UserInfoTab() {
 	>([]);
 
 	useEffect(() => {
-		if (user?.travelPreferences) {
-			setSelectedTravelPreferences(user.travelPreferences);
-		}
-		if (user?.travelCategories) {
-			setSelectedTravelCategories(user.travelCategories);
-		}
+		const fetchData = async () => {
+			setLoading(true);
+			await new Promise((resolve) => setTimeout(resolve, 1600));
+
+			if (user?.travelPreferences) {
+				setSelectedTravelPreferences(user.travelPreferences);
+			}
+			if (user?.travelCategories) {
+				setSelectedTravelCategories(user.travelCategories);
+			}
+			setLoading(false);
+		};
+
+		fetchData();
 	}, [user]);
 
 	const handleEdit = () => {
 		setIsEditing(true);
 	};
 
-	const handleSave = () => {
+	const handleSave = async () => {
+		setSaving(true);
+		await new Promise((resolve) => setTimeout(resolve, 1000));
+
 		setIsEditing(false);
-		console.log("Saving profile data:", {
-			firstName,
-			lastName,
-			email,
-			bio,
-			travelPreferences: selectedTravelPreferences,
-			travelCategories: selectedTravelCategories,
-		});
+		setSaving(false);
+		showSuccessToast("User info updated successfully");
 	};
+
+	if (loading) {
+		return (
+			<div className="container mx-auto px-4 py-8">
+				<div className="flex items-center justify-center h-64">
+					<div className="text-center">
+						<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+						<p className="text-muted-foreground">
+							{t("userProfilePage.loadingProfile")}
+						</p>
+					</div>
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<Card>
@@ -98,7 +121,9 @@ export default function UserInfoTab() {
 							<Edit className="mr-2 h-4 w-4" />
 						)}
 						{isEditing
-							? t("profileInfo.save")
+							? saving
+								? t("saving")
+								: t("profileInfo.save")
 							: t("profileInfo.edit")}
 					</Button>
 				</div>

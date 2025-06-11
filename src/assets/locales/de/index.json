@@ -1,5 +1,7 @@
 {
 	"login": "Einloggen",
+	"loginProcess": "Einloggen...",
+	"saving": "Speichern...",
 	"places": "Orte",
 	"profile": "Profil",
 	"logout": "Ausloggen",
@@ -33,7 +35,12 @@
 		"currentPasswordRequired": "Aktuelles Passwort ist erforderlich",
 		"passwordRequired": "Das Passwort ist erforderlich",
 		"confirmPasswordRequired": "Bestätigen Sie Ihr Passwort!",
-		"passwordsMismatch": "Passwörter stimmen nicht überein."
+		"passwordsMismatch": "Passwörter stimmen nicht überein.",
+		"geolocationNotSupported": "Geolocation wird von deinem Browser nicht unterstützt.",
+		"locationPermissionDenied": "Zugriff auf den Standort wurde verweigert.",
+		"positionUnavailable": "Standortposition ist nicht verfügbar.",
+		"locationRequestTimeout": "Zeitüberschreitung bei der Standortabfrage.",
+		"unknownLocationError": "Unbekannter Fehler beim Ermitteln des Standorts."
 	},
 	"reviewForm": {
 		"title": "Bewertung schreiben",
@@ -66,8 +73,9 @@
 		"about": "Über",
 		"adding": "Wird hinzugefügt...",
 		"loading": "Wird geladen...",
-		"loadMore": "Mehr laden ({{current}} von {{total}})",
-		"save": "Speichern"
+		"loadMore": "Mehr laden",
+		"save": "Speichern",
+		"itemTypeDefault": "Element"
 	},
 	"error": {
 		"invalidCode": "Ungültiger Code"
@@ -89,12 +97,13 @@
 		"selectDistancePlaceholder": "Entfernung auswählen",
 		"distanceOption": {
 			"none": "Keine",
-			"100": "100 m",
-			"250": "250 m",
-			"500": "500 m",
-			"1000": "1 km",
-			"2500": "2.5 km"
+			"0.1": "100 m",
+			"0.25": "250 m",
+			"0.5": "500 m",
+			"1": "1 km",
+			"2.5": "2.5 km"
 		},
+		"loadingDetails": "Orten werden geladen...",
 		"enableDistanceFilterMessage": "Geben Sie eine Stadt ein oder verwenden Sie Ihren Standort, um dies zu aktivieren",
 		"useProfilePreferencesTitle": "Meine Profileinstellungen verwenden",
 		"useProfilePreferencesDescription": "Filter automatisch mit Ihren gespeicherten Reisepräferenzen füllen",
@@ -264,6 +273,7 @@
 		"reports": "Berichte"
 	},
 	"placeView": {
+		"placeLinkCopied": "Ort-Link in die Zwischenablage kopiert!",
 		"loadingDetails": "Details werden geladen...",
 		"placeNotFoundTitle": "Ort nicht gefunden",
 		"placeNotFoundDescription": "Der gesuchte Ort existiert nicht oder wurde entfernt.",
@@ -491,7 +501,7 @@
 			"sortByNameAsc": "Name (A-Z)",
 			"sortByNameDesc": "Name (Z-A)"
 		},
-		"showingUsers": "Zeige {{current}} von {{total}} Benutzern",
+		"showingUsers": "Zeige {{current}} Benutzern",
 		"matchingFilters": " ({{total}} stimmen mit Ihren Filtern überein)",
 		"noUsersFound": {
 			"title": "Keine Benutzer gefunden",
@@ -517,8 +527,20 @@
 		"loadMore": {
 			"loading": "Weitere Benutzer laden...",
 			"button": "Weitere Benutzer laden",
-			"count": "({{current}} von {{total}})",
+			"count": "({{current}}",
 			"endReached": "Sie haben das Ende erreicht! Alle {{count}} Benutzer werden angezeigt."
 		}
+	},
+	"notifications": {
+		"requestingLocation": "Standort wird angefordert...",
+		"locationReceived": "Standort erfolgreich ermittelt!"
+	},
+	"dialog": {
+		"warning": "Warnung",
+		"destructiveWarningMessage": "Diese Aktion kann nicht rückgängig gemacht werden. Alle zugehörigen Daten werden dauerhaft entfernt.",
+		"cancelButton": "Abbrechen",
+		"deletingButton": "Wird gelöscht...",
+		"deleteButton": "Löschen",
+		"confirmButton": "Bestätigen"
 	}
 }

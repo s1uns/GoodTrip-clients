@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { convertDateToDDMonYYYY } from "@/shared/utils/helpers/convertDateToDDMonYYYY";
+import { showSuccessToast } from "@/shared/utils/helpers/showToast";
 
 const mockUsers = {
 	"1": {
@@ -28,7 +27,7 @@ const mockUsers = {
 		bio: "Adventure seeker and cultural enthusiast who has traveled to over 60 countries. I love discovering hidden gems, trying local cuisines, and connecting with fellow travelers. Always planning my next adventure!",
 		location: "Barcelona, Spain",
 		occupation: "Travel Blogger & Photographer",
-		joinDate: "March 2019",
+		joinDate: "March 2025",
 		profilePicture: "/placeholder.svg?height=200&width=200",
 		coverPhoto: "/placeholder.svg?height=300&width=800",
 		travelPreferences: [
@@ -81,7 +80,7 @@ const mockUsers = {
 		bio: "Luxury travel enthusiast with a passion for fine dining and cultural experiences. I believe in traveling with style and immersing myself in local traditions. Join me on my journey to discover the world's most exclusive destinations.",
 		location: "Paris, France",
 		occupation: "Travel Influencer & Food Critic",
-		joinDate: "June 2021",
+		joinDate: "June 2025",
 		profilePicture: "/placeholder.svg?height=200&width=200",
 		coverPhoto: "/placeholder.svg?height=300&width=800",
 		travelPreferences: [
@@ -174,7 +173,7 @@ export default function DifferentUserProfilePage() {
 
 	const handleShare = () => {
 		navigator.clipboard.writeText(window.location.href);
-		alert(t("userProfilePage.profileLinkCopied"));
+		showSuccessToast(t("userProfilePage.profileLinkCopied"));
 	};
 
 	if (loading) {

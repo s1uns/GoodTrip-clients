@@ -35,7 +35,7 @@ export const useUserStore = create<LoginState>()(
 			login: async (values) => {
 				set({
 					user:
-						values.email === "admin"
+						values.email === "illia.teliuk@nure.ua"
 							? mockedUser
 							: { ...mockedUser, role: ROLE_USER },
 				});

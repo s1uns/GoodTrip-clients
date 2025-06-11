@@ -89,7 +89,7 @@ const PlaceItem: FC<PlaceItemProps> = ({
 						<span className="text-sm">{place.city}</span>
 					</div>
 					<div className="flex items-center mb-3">
-						<Star className="w-5 h-5 text-yellow-400 fill-current" />
+						<Star className="w-5 h-5 fill-current" />
 						<span className="ml-1 font-semibold">
 							{place.rating.toFixed(1)}
 						</span>
