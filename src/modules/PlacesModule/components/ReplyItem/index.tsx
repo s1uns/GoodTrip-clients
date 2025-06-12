@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -13,6 +13,7 @@ import { ENTITY_REPLY } from "@/shared/constants/place";
 import emptyPic from "@/assets/emptyPic.png";
 import { convertDateToDDMonYYYY } from "@/shared/utils/helpers/convertDateToDDMonYYYY";
 import { useTranslation } from "react-i18next";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 
 interface ReplyItemProps {
 	reply: Reply;
@@ -41,6 +42,18 @@ const ReplyItem = memo<ReplyItemProps>(
 		handleReply,
 	}) => {
 		const { t, i18n } = useTranslation();
+		const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+		const [deleting, setDeleting] = useState(false);
+
+		const handleOpenDeletionModal = () => setDeleteModalOpen(true);
+		const handleCloseDeletionModal = () => setDeleteModalOpen(false);
+
+		const deleteReply = useCallback(async () => {
+			setDeleting(true);
+			await handleDeleteReply(reply.id);
+			setDeleting(false);
+		}, [reply]);
+
 		return (
 			<div className="flex items-start gap-3">
 				<div className="flex-1">
@@ -81,9 +94,7 @@ const ReplyItem = memo<ReplyItemProps>(
 											{t("reviewItem.edit")}
 										</DropdownMenuItem>
 										<DropdownMenuItem
-											onClick={() =>
-												handleDeleteReply(reply.id)
-											}
+											onClick={handleOpenDeletionModal}
 										>
 											<Trash2 className="w-4 h-4 mr-2" />
 											{t("reviewItem.delete")}
@@ -162,6 +173,19 @@ const ReplyItem = memo<ReplyItemProps>(
 						</div>
 					)}
 				</div>
+				{deleteModalOpen ? (
+					<ConfirmationModal
+						isOpen={deleteModalOpen}
+						onClose={handleCloseDeletionModal}
+						onConfirm={deleteReply}
+						title={t("placeView.delete_reply_title")}
+						description={t("placeView.delete_reply_description")}
+						itemName={`${t("by")} ${reply.username}`}
+						itemType={t("replyType")}
+						isLoading={deleting}
+						variant="destructive"
+					/>
+				) : null}
 			</div>
 		);
 	},

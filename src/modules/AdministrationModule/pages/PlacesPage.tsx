@@ -27,6 +27,14 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import useDebounce from "@/shared/utils/hooks/useDebounce";
+import PlacesAutocomplete, {
+	geocodeByAddress,
+	getLatLng,
+} from "react-places-autocomplete";
+import {
+	showErrorToast,
+	showSuccessToast,
+} from "@/shared/utils/helpers/showToast";
 
 interface Place {
 	id: string;
@@ -243,6 +251,256 @@ const simulateApiCall = <T,>(
 	});
 };
 
+interface AutocompleteAddressInputProps {
+	value: string;
+	onChange: (address: string) => void;
+	onSelect: (address: string, latLng: { lat: number; lng: number }) => void;
+	placeholder: string;
+}
+
+const AutocompleteAddressInput: React.FC<AutocompleteAddressInputProps> = ({
+	value,
+	onChange,
+	onSelect,
+	placeholder,
+}) => {
+	const { t } = useTranslation();
+
+	const handleSelect = async (address: string) => {
+		try {
+			const results = await geocodeByAddress(address);
+			const latLng = await getLatLng(results[0]);
+
+			onSelect(address, latLng);
+		} catch (error) {
+			showErrorToast(t("placesPage.autocomplete_error_message"));
+		}
+	};
+
+	return (
+		<PlacesAutocomplete
+			value={value}
+			onChange={onChange}
+			onSelect={handleSelect}
+		>
+			{({
+				getInputProps,
+				suggestions,
+				getSuggestionItemProps,
+				loading,
+			}) => (
+				<div className="relative">
+					<Input
+						{...getInputProps({
+							placeholder: placeholder,
+						})}
+					/>
+					{suggestions.length > 0 && (
+						<div className="absolute z-50 w-full bg-white border shadow rounded mt-1 max-h-60 overflow-auto">
+							{loading && (
+								<div className="px-4 py-2 text-muted-foreground text-sm">
+									{t("placesPage.loading")}
+								</div>
+							)}
+							{suggestions.map((suggestion, idx) => (
+								<div
+									key={idx}
+									{...getSuggestionItemProps(suggestion, {
+										className:
+											"px-4 py-2 hover:bg-muted cursor-pointer text-sm",
+									})}
+								>
+									{suggestion.description}
+								</div>
+							))}
+						</div>
+					)}
+				</div>
+			)}
+		</PlacesAutocomplete>
+	);
+};
+
+const AddPlaceBlock = ({ onPlaceAdded }: { onPlaceAdded: () => void }) => {
+	const [newPlaceName, setNewPlaceName] = useState("");
+	const [newPlaceAddress, setNewPlaceAddress] = useState("");
+	const [newPlaceCoordinates, setNewPlaceCoordinates] = useState({
+		lat: 0,
+		lng: 0,
+	});
+	const [newPlaceImageFile, setNewPlaceImageFile] = useState<File | null>(
+		null,
+	);
+
+	const [newPlaceCategories, setNewPlaceCategories] = useState<string[]>([]);
+	const [newPlaceTags, setNewPlaceTags] = useState<string[]>([]);
+	const [addingPlace, setAddingPlace] = useState(false);
+	const { t } = useTranslation();
+
+	const handleAddPlace = async () => {
+		if (!newPlaceName.trim() || !newPlaceAddress.trim()) return;
+		setAddingPlace(true);
+		try {
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+
+			const newPlace: Place = {
+				id: Date.now().toString(),
+				name: newPlaceName.trim(),
+				address: newPlaceAddress.trim(),
+				image: newPlaceImageFile
+					? URL.createObjectURL(newPlaceImageFile)
+					: "/placeholder.svg?height=200&width=300",
+				travelCategories: newPlaceCategories,
+				travelTags: newPlaceTags,
+				rating: 0,
+				coordinates: newPlaceCoordinates,
+			};
+			showSuccessToast(t("toasts.placeAdded"));
+			mockPlaces.unshift(newPlace);
+			onPlaceAdded();
+		} catch (error) {
+			showErrorToast(t("placesPage.add_place_error"));
+		} finally {
+			setNewPlaceName("");
+			setNewPlaceAddress("");
+			setNewPlaceCoordinates({ lat: 0, lng: 0 });
+			setNewPlaceImageFile(null);
+			setNewPlaceCategories([]);
+			setNewPlaceTags([]);
+			setAddingPlace(false);
+		}
+	};
+
+	return (
+		<Card>
+			<CardHeader>
+				<CardTitle className="flex items-center gap-2">
+					<Plus className="w-5 h-5" />
+					{t("placesPage.add_new_place")}
+				</CardTitle>
+				<CardDescription>
+					{t("placesPage.create_new_place")}
+				</CardDescription>
+			</CardHeader>
+			<CardContent className="space-y-4">
+				<div className="space-y-2">
+					<Label>{t("placesPage.place_image")}</Label>
+					{newPlaceImageFile ? (
+						<div className="relative">
+							<img
+								src={URL.createObjectURL(newPlaceImageFile)}
+								alt="Preview"
+								className="w-full h-32 object-cover rounded-lg"
+							/>
+							<Button
+								variant="outline"
+								size="sm"
+								className="absolute top-2 right-2"
+								onClick={() => setNewPlaceImageFile(null)}
+							>
+								<X className="w-4 h-4" />
+							</Button>
+						</div>
+					) : (
+						<div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 text-center">
+							<ImageIcon className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+							<p className="text-sm text-muted-foreground mb-2">
+								{t("placesPage.upload_image")}
+							</p>
+							<Input
+								type="file"
+								accept="image/*"
+								onChange={(e) =>
+									e.target.files?.[0] &&
+									setNewPlaceImageFile(e.target.files[0])
+								}
+								className="hidden"
+								id="new-place-image-upload"
+							/>
+							<Label
+								htmlFor="new-place-image-upload"
+								className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 cursor-pointer"
+							>
+								<Upload className="w-4 h-4 mr-2" />
+								{t("placesPage.choose_image")}
+							</Label>
+						</div>
+					)}
+				</div>
+
+				<div className="space-y-2">
+					<Label htmlFor="new-place-name">
+						{t("placesPage.place_name")}
+					</Label>
+					<Input
+						id="new-place-name"
+						placeholder={t("placesPage.place_name_placeholder")}
+						value={newPlaceName}
+						onChange={(e) => setNewPlaceName(e.target.value)}
+					/>
+				</div>
+
+				<div className="space-y-2">
+					<Label htmlFor="new-place-address">
+						{t("placesPage.address")}
+					</Label>
+					<AutocompleteAddressInput
+						value={newPlaceAddress}
+						onChange={setNewPlaceAddress}
+						onSelect={(address, latLng) => {
+							setNewPlaceAddress(address);
+							setNewPlaceCoordinates(latLng);
+						}}
+						placeholder={t("placesPage.address_placeholder")}
+					/>
+				</div>
+
+				<div className="space-y-2">
+					<Label>{t("placesPage.categories")}</Label>
+					<MultiSelect
+						options={travelCategoriesOptions}
+						selected={newPlaceCategories}
+						onChange={setNewPlaceCategories}
+						placeholder={t("placesPage.categories_placeholder")}
+					/>
+				</div>
+
+				<div className="space-y-2">
+					<Label>{t("placesPage.tags")}</Label>
+					<MultiSelect
+						options={travelTagsOptions}
+						selected={newPlaceTags}
+						onChange={setNewPlaceTags}
+						placeholder={t("placesPage.tags_placeholder")}
+					/>
+				</div>
+
+				<Button
+					onClick={handleAddPlace}
+					disabled={
+						!newPlaceName.trim() ||
+						!newPlaceAddress.trim() ||
+						addingPlace
+					}
+					className="w-full"
+				>
+					{addingPlace ? (
+						<>
+							<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+							{t("placesPage.adding")}
+						</>
+					) : (
+						<>
+							<Plus className="w-4 h-4 mr-2" />
+							{t("placesPage.add_place")}
+						</>
+					)}
+				</Button>
+			</CardContent>
+		</Card>
+	);
+};
+
 const AdminPlacesPage = () => {
 	const [places, setPlaces] = useState<Place[]>([]);
 	const [placesLoading, setPlacesLoading] = useState(true);
@@ -252,12 +510,6 @@ const AdminPlacesPage = () => {
 	const [placesTotalCount, setPlacesTotalCount] = useState(0);
 	const [placesSearch, setPlacesSearch] = useState("");
 	const debouncedPlaceSearch = useDebounce(placesSearch);
-	const [newPlaceName, setNewPlaceName] = useState("");
-	const [newPlaceAddress, setNewPlaceAddress] = useState("");
-	const [newPlaceImage, setNewPlaceImage] = useState("");
-	const [newPlaceCategories, setNewPlaceCategories] = useState<string[]>([]);
-	const [newPlaceTags, setNewPlaceTags] = useState<string[]>([]);
-	const [addingPlace, setAddingPlace] = useState(false);
 
 	const [editingPlace, setEditingPlace] = useState<string | null>(null);
 	const [editPlaceName, setEditPlaceName] = useState("");
@@ -267,6 +519,11 @@ const AdminPlacesPage = () => {
 		[],
 	);
 	const [editPlaceTags, setEditPlaceTags] = useState<string[]>([]);
+	const [editPlaceCoordinates, setEditPlaceCoordinates] = useState({
+		lat: 0,
+		lng: 0,
+	});
+
 	const { t } = useTranslation();
 	const [deleteModal, setDeleteModal] = useState<{
 		isOpen: boolean;
@@ -318,55 +575,10 @@ const AdminPlacesPage = () => {
 			setPlacesHasMore(response.hasMore);
 			setPlacesTotalCount(response.total);
 		} catch (error) {
-			console.error("Error loading places:", error);
+			showErrorToast(t("placesPage.load_places_error"));
 		} finally {
 			setPlacesLoading(false);
 			setPlacesLoadingMore(false);
-		}
-	};
-
-	const handleAddPlace = async () => {
-		if (!newPlaceName.trim() || !newPlaceAddress.trim()) return;
-
-		setAddingPlace(true);
-		try {
-			await new Promise((resolve) => setTimeout(resolve, 1000));
-
-			const newPlace: Place = {
-				id: Date.now().toString(),
-				name: newPlaceName.trim(),
-				address: newPlaceAddress.trim(),
-				image: newPlaceImage || "/placeholder.svg?height=200&width=300",
-				travelCategories: newPlaceCategories,
-				travelTags: newPlaceTags,
-				rating: 0,
-				coordinates: { lat: 0, lng: 0 },
-			};
-
-			mockPlaces.unshift(newPlace);
-
-			if (
-				!debouncedPlaceSearch ||
-				newPlace.name
-					.toLowerCase()
-					.includes(debouncedPlaceSearch.toLowerCase()) ||
-				newPlace.address
-					.toLowerCase()
-					.includes(debouncedPlaceSearch.toLowerCase())
-			) {
-				setPlaces((prev) => [newPlace, ...prev]);
-				setPlacesTotalCount((prev) => prev + 1);
-			}
-
-			setNewPlaceName("");
-			setNewPlaceAddress("");
-			setNewPlaceImage("");
-			setNewPlaceCategories([]);
-			setNewPlaceTags([]);
-		} catch (error) {
-			console.error("Error adding place:", error);
-		} finally {
-			setAddingPlace(false);
 		}
 	};
 
@@ -389,7 +601,7 @@ const AdminPlacesPage = () => {
 				prev.filter((p) => p.id !== deleteModal.placeId),
 			);
 			setPlacesTotalCount((prev) => prev - 1);
-
+			showSuccessToast(t("toasts.placeDeleted"));
 			setDeleteModal({
 				isOpen: false,
 				placeId: null,
@@ -397,7 +609,7 @@ const AdminPlacesPage = () => {
 				isLoading: false,
 			});
 		} catch (error) {
-			console.error("Error deleting place:", error);
+			showErrorToast(t("placesPage.delete_place_error"));
 			setDeleteModal((prev) => ({ ...prev, isLoading: false }));
 		}
 	};
@@ -409,6 +621,7 @@ const AdminPlacesPage = () => {
 		setEditPlaceImage(place.image);
 		setEditPlaceCategories(place.travelCategories);
 		setEditPlaceTags(place.travelTags);
+		setEditPlaceCoordinates(place.coordinates);
 	};
 
 	const saveEditPlace = async () => {
@@ -426,6 +639,7 @@ const AdminPlacesPage = () => {
 					image: editPlaceImage,
 					travelCategories: editPlaceCategories,
 					travelTags: editPlaceTags,
+					coordinates: editPlaceCoordinates,
 				};
 			}
 
@@ -439,14 +653,16 @@ const AdminPlacesPage = () => {
 								image: editPlaceImage,
 								travelCategories: editPlaceCategories,
 								travelTags: editPlaceTags,
+								coordinates: editPlaceCoordinates,
 						  }
 						: p,
 				),
 			);
+			showSuccessToast(t("toasts.placeUpdated"));
 
 			setEditingPlace(null);
 		} catch (error) {
-			console.error("Error updating place:", error);
+			showErrorToast(t("placesPage.update_place_error"));
 		}
 	};
 
@@ -470,6 +686,10 @@ const AdminPlacesPage = () => {
 		}
 	};
 
+	const handlePlaceAdded = () => {
+		loadPlaces(true);
+	};
+
 	return (
 		<div className="container mx-auto px-4 py-8">
 			<div className="mb-6">
@@ -483,139 +703,7 @@ const AdminPlacesPage = () => {
 			</div>
 
 			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2">
-							<Plus className="w-5 h-5" />
-							{t("placesPage.add_new_place")}
-						</CardTitle>
-						<CardDescription>
-							{t("placesPage.create_new_place")}
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="space-y-4">
-						<div className="space-y-2">
-							<Label>{t("placesPage.place_image")}</Label>
-							<div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4">
-								{newPlaceImage ? (
-									<div className="relative">
-										<img
-											src={
-												newPlaceImage ||
-												"/placeholder.svg"
-											}
-											alt="Place preview"
-											className="w-full h-32 object-cover rounded-lg"
-										/>
-										<Button
-											variant="outline"
-											size="sm"
-											className="absolute top-2 right-2"
-											onClick={() => setNewPlaceImage("")}
-										>
-											<X className="w-4 h-4" />
-										</Button>
-									</div>
-								) : (
-									<div className="text-center">
-										<ImageIcon className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-										<p className="text-sm text-muted-foreground mb-2">
-											{t("placesPage.upload_image")}
-										</p>
-										<Button
-											variant="outline"
-											size="sm"
-											onClick={() =>
-												setNewPlaceImage(
-													"/placeholder.svg?height=200&width=300",
-												)
-											}
-										>
-											<Upload className="w-4 h-4 mr-2" />
-											{t("placesPage.choose_image")}
-										</Button>
-									</div>
-								)}
-							</div>
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="new-place-name">
-								{t("placesPage.place_name")}
-							</Label>
-							<Input
-								id="new-place-name"
-								placeholder={t(
-									"placesPage.place_name_placeholder",
-								)}
-								value={newPlaceName}
-								onChange={(e) =>
-									setNewPlaceName(e.target.value)
-								}
-							/>
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="new-place-address">
-								{t("placesPage.address")}
-							</Label>
-							<Input
-								id="new-place-address"
-								placeholder={t(
-									"placesPage.address_placeholder",
-								)}
-								value={newPlaceAddress}
-								onChange={(e) =>
-									setNewPlaceAddress(e.target.value)
-								}
-							/>
-						</div>
-
-						<div className="space-y-2">
-							<Label>{t("placesPage.categories")}</Label>
-							<MultiSelect
-								options={travelCategoriesOptions}
-								selected={newPlaceCategories}
-								onChange={setNewPlaceCategories}
-								placeholder={t(
-									"placesPage.categories_placeholder",
-								)}
-							/>
-						</div>
-
-						<div className="space-y-2">
-							<Label>{t("placesPage.tags")}</Label>
-							<MultiSelect
-								options={travelTagsOptions}
-								selected={newPlaceTags}
-								onChange={setNewPlaceTags}
-								placeholder={t("placesPage.tags_placeholder")}
-							/>
-						</div>
-
-						<Button
-							onClick={handleAddPlace}
-							disabled={
-								!newPlaceName.trim() ||
-								!newPlaceAddress.trim() ||
-								addingPlace
-							}
-							className="w-full"
-						>
-							{addingPlace ? (
-								<>
-									<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-									{t("placesPage.adding")}
-								</>
-							) : (
-								<>
-									<Plus className="w-4 h-4 mr-2" />
-									{t("placesPage.add_place")}
-								</>
-							)}
-						</Button>
-					</CardContent>
-				</Card>
+				<AddPlaceBlock onPlaceAdded={handlePlaceAdded} />
 
 				<Card className="lg:col-span-2">
 					<CardHeader>
@@ -712,300 +800,239 @@ const AdminPlacesPage = () => {
 														</div>
 													</div>
 
-													<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-														<div className="space-y-2">
-															<Label>
-																{t(
-																	"placesPage.place_name",
-																)}
-															</Label>
-															<Input
-																value={
-																	editPlaceName
-																}
-																onChange={(e) =>
-																	setEditPlaceName(
-																		e.target
-																			.value,
-																	)
-																}
-																placeholder="Place name"
-															/>
-														</div>
-														<div className="space-y-2">
-															<Label>
-																{t(
-																	"placesPage.address",
-																)}
-															</Label>
-															<Input
-																value={
-																	editPlaceAddress
-																}
-																onChange={(e) =>
-																	setEditPlaceAddress(
-																		e.target
-																			.value,
-																	)
-																}
-																placeholder="Address"
-															/>
-														</div>
-													</div>
-
-													<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-														<div className="space-y-2">
-															<Label>
-																{t(
-																	"placesPage.categories",
-																)}
-															</Label>
-															<MultiSelect
-																options={
-																	travelCategoriesOptions
-																}
-																selected={
-																	editPlaceCategories
-																}
-																onChange={
-																	setEditPlaceCategories
-																}
-																placeholder={t(
-																	"placesPage.categories_placeholder",
-																)}
-															/>
-														</div>
-														<div className="space-y-2">
-															<Label>
-																{t(
-																	"placesPage.tags",
-																)}
-															</Label>
-															<MultiSelect
-																options={
-																	travelTagsOptions
-																}
-																selected={
-																	editPlaceTags
-																}
-																onChange={
-																	setEditPlaceTags
-																}
-																placeholder={t(
-																	"placesPage.tags_placeholder",
-																)}
-															/>
-														</div>
-													</div>
-
-													<div className="flex gap-2">
-														<Button
-															size="sm"
-															onClick={
-																saveEditPlace
-															}
+													<div className="space-y-2">
+														<Label
+															htmlFor={`edit-place-name-${place.id}`}
 														>
-															<Save className="w-4 h-4 mr-1" />
 															{t(
-																"placesPage.save",
+																"placesPage.place_name",
 															)}
-														</Button>
+														</Label>
+														<Input
+															id={`edit-place-name-${place.id}`}
+															value={
+																editPlaceName
+															}
+															onChange={(e) =>
+																setEditPlaceName(
+																	e.target
+																		.value,
+																)
+															}
+														/>
+													</div>
+
+													<div className="space-y-2">
+														<Label
+															htmlFor={`edit-place-address-${place.id}`}
+														>
+															{t(
+																"placesPage.address",
+															)}
+														</Label>
+														<AutocompleteAddressInput
+															value={
+																editPlaceAddress
+															}
+															onChange={
+																setEditPlaceAddress
+															}
+															onSelect={(
+																address,
+																latLng,
+															) => {
+																setEditPlaceAddress(
+																	address,
+																);
+																setEditPlaceCoordinates(
+																	latLng,
+																);
+															}}
+															placeholder={t(
+																"placesPage.address_placeholder",
+															)}
+														/>
+													</div>
+
+													<div className="space-y-2">
+														<Label>
+															{t(
+																"placesPage.categories",
+															)}
+														</Label>
+														<MultiSelect
+															options={
+																travelCategoriesOptions
+															}
+															selected={
+																editPlaceCategories
+															}
+															onChange={
+																setEditPlaceCategories
+															}
+															placeholder={t(
+																"placesPage.categories_placeholder",
+															)}
+														/>
+													</div>
+
+													<div className="space-y-2">
+														<Label>
+															{t(
+																"placesPage.tags",
+															)}
+														</Label>
+														<MultiSelect
+															options={
+																travelTagsOptions
+															}
+															selected={
+																editPlaceTags
+															}
+															onChange={
+																setEditPlaceTags
+															}
+															placeholder={t(
+																"placesPage.tags_placeholder",
+															)}
+														/>
+													</div>
+
+													<div className="flex justify-end gap-2">
 														<Button
 															variant="outline"
-															size="sm"
 															onClick={() =>
 																setEditingPlace(
 																	null,
 																)
 															}
 														>
-															<X className="w-4 h-4 mr-1" />
+															<X className="w-4 h-4 mr-2" />
 															{t(
 																"placesPage.cancel",
+															)}
+														</Button>
+														<Button
+															onClick={
+																saveEditPlace
+															}
+														>
+															<Save className="w-4 h-4 mr-2" />
+															{t(
+																"placesPage.save",
 															)}
 														</Button>
 													</div>
 												</div>
 											) : (
-												<div className="flex gap-4">
-													<div className="flex-shrink-0 w-[300px] h-20 overflow-hidden rounded-lg">
-														<img
-															src={
-																place.image ||
-																"/placeholder.svg"
-															}
-															alt={place.name}
-															className="w-full h-full object-cover"
-														/>
-													</div>
-
-													<div className="flex-1 min-w-0">
-														<div className="flex items-start justify-between">
-															<div className="flex-1 min-w-0">
-																<h3 className="font-semibold text-lg truncate">
-																	{place.name}
-																</h3>
-																<p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-																	<MapPin className="w-4 h-4 flex-shrink-0" />
-																	<span className="truncate">
-																		{
-																			place.address
+												<div className="flex items-center gap-4">
+													<img
+														src={place.image}
+														alt={place.name}
+														className="w-20 h-20 object-cover rounded-lg"
+													/>
+													<div className="flex-1">
+														<h3 className="font-semibold text-lg">
+															{place.name}
+														</h3>
+														<p className="text-muted-foreground text-sm flex items-center">
+															<MapPin className="w-3 h-3 mr-1" />
+															{place.address}
+														</p>
+														<div className="flex flex-wrap gap-1 mt-2">
+															{place.travelCategories.map(
+																(category) => (
+																	<Badge
+																		key={
+																			category
 																		}
-																	</span>
-																</p>
-																{place.rating >
-																	0 && (
-																	<div className="flex items-center gap-1 mt-1">
-																		<Star className="w-4 h-4 fill-current" />
-																		<span className="text-sm font-medium">
-																			{place.rating.toFixed(
-																				1,
-																			)}
-																		</span>
-																	</div>
-																)}
-															</div>
-
-															<div className="flex gap-2 ml-4">
-																<Button
-																	variant="outline"
-																	size="sm"
-																	onClick={() =>
-																		startEditPlace(
-																			place,
-																		)
-																	}
-																>
-																	<Edit className="w-4 h-4" />
-																</Button>
-																<Button
-																	variant="outline"
-																	size="sm"
-																	onClick={() =>
-																		openDeleteModal(
-																			place,
-																		)
-																	}
-																>
-																	<Trash2 className="w-4 h-4" />
-																</Button>
-															</div>
-														</div>
-
-														<div className="mt-3 space-y-2">
-															{place
-																.travelCategories
-																.length > 0 && (
-																<div className="flex flex-wrap gap-1">
-																	{place.travelCategories
-																		.slice(
-																			0,
-																			3,
-																		)
-																		.map(
+																		variant="secondary"
+																	>
+																		{travelCategoriesOptions.find(
 																			(
-																				categoryId,
-																			) => (
-																				<Badge
-																					key={
-																						categoryId
-																					}
-																					variant="secondary"
-																					className="text-xs"
-																				>
-																					{travelCategoriesOptions.find(
-																						(
-																							opt,
-																						) =>
-																							opt.value ===
-																							categoryId,
-																					)
-																						?.label ||
-																						categoryId}
-																				</Badge>
-																			),
-																		)}
-																	{place
-																		.travelCategories
-																		.length >
-																		3 && (
-																		<Badge
-																			variant="outline"
-																			className="text-xs"
-																		>
-																			{t(
-																				"placesPage.load_more",
-																			)}
-																		</Badge>
-																	)}
-																</div>
+																				opt,
+																			) =>
+																				opt.value ===
+																				category,
+																		)
+																			?.label ||
+																			category}
+																	</Badge>
+																),
 															)}
-
-															{place.travelTags
-																.length > 0 && (
-																<div className="flex flex-wrap gap-1">
-																	{place.travelTags
-																		.slice(
-																			0,
-																			4,
-																		)
-																		.map(
+															{place.travelTags.map(
+																(tag) => (
+																	<Badge
+																		key={
+																			tag
+																		}
+																		variant="outline"
+																	>
+																		{travelTagsOptions.find(
 																			(
-																				tagId,
-																			) => (
-																				<Badge
-																					key={
-																						tagId
-																					}
-																					variant="outline"
-																					className="text-xs"
-																				>
-																					{travelTagsOptions.find(
-																						(
-																							opt,
-																						) =>
-																							opt.value ===
-																							tagId,
-																					)
-																						?.label ||
-																						tagId}
-																				</Badge>
-																			),
-																		)}
-																	{place
-																		.travelTags
-																		.length >
-																		4 && (
-																		<Badge
-																			variant="outline"
-																			className="text-xs"
-																		>
-																			{t(
-																				"placesPage.load_more",
-																			)}
-																		</Badge>
-																	)}
-																</div>
+																				opt,
+																			) =>
+																				opt.value ===
+																				tag,
+																		)
+																			?.label ||
+																			tag}
+																	</Badge>
+																),
 															)}
 														</div>
+														{place.rating > 0 && (
+															<div className="flex items-center text-sm text-muted-foreground mt-1">
+																<Star className="w-4 h-4 mr-1 text-yellow-500 fill-yellow-500" />
+																<span>
+																	{place.rating.toFixed(
+																		1,
+																	)}
+																</span>
+															</div>
+														)}
+													</div>
+													<div className="flex gap-2">
+														<Button
+															variant="outline"
+															size="sm"
+															onClick={() =>
+																startEditPlace(
+																	place,
+																)
+															}
+														>
+															<Edit className="w-4 h-4" />
+														</Button>
+														<Button
+															variant="destructive"
+															size="sm"
+															onClick={() =>
+																openDeleteModal(
+																	place,
+																)
+															}
+														>
+															<Trash2 className="w-4 h-4" />
+														</Button>
 													</div>
 												</div>
 											)}
 										</div>
 									))}
 								</div>
-
 								{placesHasMore && (
-									<div className="flex justify-center mt-6">
+									<div className="text-center mt-4">
 										<Button
 											onClick={() => loadPlaces(false)}
 											disabled={placesLoadingMore}
-											variant="outline"
 										>
 											{placesLoadingMore ? (
 												<>
 													<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-													{t("placesPage.loading")}
+													{t(
+														"placesPage.loading_more",
+													)}
 												</>
 											) : (
 												t("placesPage.load_more")
@@ -1023,12 +1050,11 @@ const AdminPlacesPage = () => {
 				isOpen={deleteModal.isOpen}
 				onClose={closeDeleteModal}
 				onConfirm={handleDeletePlace}
-				title={t("placesPage.delete_title")}
+				title={t("placesPage.delete_title", {
+					placeName: deleteModal.placeName,
+				})}
 				description={t("placesPage.delete_description")}
-				itemName={deleteModal.placeName}
-				itemType="place"
 				isLoading={deleteModal.isLoading}
-				variant="destructive"
 			/>
 		</div>
 	);

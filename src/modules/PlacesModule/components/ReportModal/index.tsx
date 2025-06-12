@@ -25,7 +25,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ENTITY_REVIEW, reportReasons } from "@/shared/constants/place";
 import zIndex from "@mui/material/styles/zIndex";
-import { showSuccessToast } from "@/shared/utils/helpers/showToast";
+import {
+	showErrorToast,
+	showSuccessToast,
+} from "@/shared/utils/helpers/showToast";
+import { useTranslation } from "react-i18next";
 
 interface ReportModalProps {
 	open: boolean;
@@ -43,25 +47,33 @@ export default function ReportModal({
 	const [selectedReportReason, setSelectedReportReason] = useState<
 		string | undefined
 	>(undefined);
+	const { t } = useTranslation();
 	const [reportDetails, setReportDetails] = useState("");
-
+	const [sending, setSending] = useState(false);
 	const handleCloseDialog = useCallback(() => setShowReportDialog(false), []);
 
 	const handleSendReport = useCallback(() => {
-		console.log("ID: ", entityId);
-		console.log("entityType: ", entityType);
-		console.log("selectedReportReason: ", selectedReportReason);
-		if (entityId && entityType && selectedReportReason !== undefined) {
-			const reasonValue = parseInt(selectedReportReason);
-			// handleReport(
-			// 	reportingEntityId,
-			// 	entityType,
-			// 	reasonValue,
-			// 	reportDetails,
-			// );
+		try {
+			setSending(true);
+			console.log("ID: ", entityId);
+			console.log("entityType: ", entityType);
+			console.log("selectedReportReason: ", selectedReportReason);
+			if (entityId && entityType && selectedReportReason !== undefined) {
+				const reasonValue = parseInt(selectedReportReason);
+				// handleReport(
+				// 	reportingEntityId,
+				// 	entityType,
+				// 	reasonValue,
+				// 	reportDetails,
+				// );
+			}
+			showSuccessToast(t("toasts.reportSent"));
+			handleCloseDialog();
+		} catch (error) {
+			showErrorToast(t("toasts.somethingWentWrong"));
+		} finally {
+			setSending(false);
 		}
-		showSuccessToast("Your report was sent successfully!");
-		handleCloseDialog();
 	}, [
 		entityId,
 		entityType,

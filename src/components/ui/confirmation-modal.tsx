@@ -14,7 +14,7 @@ interface ConfirmationModalProps {
 	isOpen: boolean;
 	onClose: () => void;
 	onConfirm: () => void;
-	title: string;
+	title?: string;
 	description: string;
 	itemName?: string;
 	itemType?: string;
@@ -52,11 +52,13 @@ export function ConfirmationModal({
 								<AlertTriangle className="h-5 w-5" />
 							)}
 						</div>
-						<div>
-							<DialogTitle className="text-left">
-								{title}
-							</DialogTitle>
-						</div>
+						{title ? (
+							<div>
+								<DialogTitle className="text-left">
+									{title}
+								</DialogTitle>
+							</div>
+						) : null}
 					</div>
 				</DialogHeader>
 

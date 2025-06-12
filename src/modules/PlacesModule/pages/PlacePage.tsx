@@ -14,7 +14,10 @@ import {
 import { Review } from "@/shared/types/Review";
 import { Reply } from "@/shared/types/Reply";
 import { useTranslation } from "react-i18next";
-import { showSuccessToast } from "@/shared/utils/helpers/showToast";
+import {
+	showErrorToast,
+	showSuccessToast,
+} from "@/shared/utils/helpers/showToast";
 
 const placeTypesMapping: Record<string, string> = {
 	amusement_park: "Amusement Park",
@@ -192,27 +195,17 @@ const PlaceView = () => {
 	const [showReviewForm, setShowReviewForm] = useState(false);
 
 	const [editingReview, setEditingReview] = useState<string | null>(null);
+	const [updatingReview, setUpdatingReview] = useState(false);
+	const [updatingReply, setUpdatingReply] = useState(false);
 
 	useEffect(() => {
 		const fetchPlace = async () => {
 			setLoading(true);
 			try {
 				setTimeout(() => {
-					const placeData = {
-						id: "1",
-						name: "Pinchuk Art Centre",
-						address:
-							"Velyka Vasylkivska St., Baseyna St., 1, 3-2, Kyiv, 01004",
-						rating: 4,
-						totalReviews: 4,
-						types: ["park", "tourist_attraction"],
-						coordinates: {
-							lat: 50.44177930000001,
-							lng: 30.5211407,
-						},
-						picture:
-							"https://wiki.kubg.edu.ua/images/c/c3/218-pinchuk-art-centre-75-1448354257.jpg",
-					};
+					const placeData = mockedPlaces.find(
+						(place) => `${place.id}` === `${placeId}`,
+					);
 					setPlace(placeData);
 					setReviews(mockReviews);
 					setLoading(false);
@@ -289,9 +282,9 @@ const PlaceView = () => {
 
 			setReviews([review, ...reviews]);
 			setShowReviewForm(false);
-			showSuccessToast("Review created successfully!");
+			showSuccessToast(t("toasts.reviewAdded"));
 		} catch (error) {
-			console.error("Error submitting review:", error);
+			showErrorToast(t("toasts.somethingWentWrong"));
 		} finally {
 			setIsSubmittingReview(false);
 		}
@@ -338,14 +331,18 @@ const PlaceView = () => {
 	};
 
 	const handleAddReply = (reply: Reply, reviewId: string) => {
-		setReviews((prev) =>
-			prev.map((review) =>
-				review.id === reviewId
-					? { ...review, replies: [...review.replies, reply] }
-					: review,
-			),
-		);
-		showSuccessToast("Reply added successfully!");
+		try {
+			setReviews((prev) =>
+				prev.map((review) =>
+					review.id === reviewId
+						? { ...review, replies: [...review.replies, reply] }
+						: review,
+				),
+			);
+			showSuccessToast(t("toasts.replyAdded"));
+		} catch (error) {
+			showErrorToast(t("toasts.somethingWentWrong"));
+		}
 	};
 
 	const handleEditReview = (
@@ -354,64 +351,90 @@ const PlaceView = () => {
 		reviewId: string,
 		editImages: string[],
 	) => {
-		setReviews((prev) =>
-			prev.map((review) =>
-				review.id === reviewId
-					? {
-							...review,
-							text: editText,
-							rating: editRating,
-							images: editImages,
-					  }
-					: review,
-			),
-		);
-		showSuccessToast("Review updated successfully!");
-
-		setEditingReview(null);
-	};
-
-	const handleDeleteReview = (reviewId: string) => {
-		setReviews((prev) => prev.filter((review) => review.id !== reviewId));
-		showSuccessToast("Review deleted successfully!");
-	};
-
-	const handleEditReply = useCallback(
-		(reviewId: string, replyId: string, editText: string) => {
-			setReviews((prevReviews) =>
-				prevReviews.map((review) =>
+		try {
+			setUpdatingReview(true);
+			setReviews((prev) =>
+				prev.map((review) =>
 					review.id === reviewId
 						? {
 								...review,
-								replies: review.replies.map((reply: Reply) =>
-									reply.id === replyId
-										? { ...reply, text: editText }
-										: reply,
-								),
+								text: editText,
+								rating: editRating,
+								images: editImages,
 						  }
 						: review,
 				),
 			);
-			showSuccessToast("Reply updated successfully!");
+			showSuccessToast(t("toasts.reviewUpdated"));
+
+			setEditingReview(null);
+		} catch {
+			showErrorToast(t("toasts.somethingWentWrong"));
+		} finally {
+			setUpdatingReview(false);
+		}
+	};
+
+	const handleDeleteReview = async (reviewId: string) => {
+		try {
+			setReviews((prev) =>
+				prev.filter((review) => review.id !== reviewId),
+			);
+			showSuccessToast(t("toasts.reviewDeleted"));
+		} catch {
+			showErrorToast(t("toasts.somethingWentWrong"));
+		}
+	};
+
+	const handleEditReply = useCallback(
+		(reviewId: string, replyId: string, editText: string) => {
+			try {
+				setUpdatingReply(true);
+
+				setReviews((prevReviews) =>
+					prevReviews.map((review) =>
+						review.id === reviewId
+							? {
+									...review,
+									replies: review.replies.map(
+										(reply: Reply) =>
+											reply.id === replyId
+												? { ...reply, text: editText }
+												: reply,
+									),
+							  }
+							: review,
+					),
+				);
+				showSuccessToast(t("toasts.replyUpdated"));
+			} catch {
+				showErrorToast(t("toasts.somethingWentWrong"));
+			} finally {
+				setUpdatingReply(false);
+			}
 		},
 		[],
 	);
 
 	const handleDeleteReply = useCallback(
-		(reviewId: string, replyId: string) => {
-			setReviews((prevReviews) =>
-				prevReviews.map((review) =>
-					review.id === reviewId
-						? {
-								...review,
-								replies: review.replies.filter(
-									(reply: Reply) => reply.id !== replyId,
-								),
-						  }
-						: review,
-				),
-			);
-			showSuccessToast("Reply deleted successfully!");
+		async (reviewId: string, replyId: string) => {
+			try {
+				setReviews((prevReviews) =>
+					prevReviews.map((review) =>
+						review.id === reviewId
+							? {
+									...review,
+									replies: review.replies.filter(
+										(reply: Reply) => reply.id !== replyId,
+									),
+							  }
+							: review,
+					),
+				);
+				showSuccessToast(t("toasts.replyDeleted"));
+			} catch {
+				showErrorToast(t("toasts.somethingWentWrong"));
+			}
 		},
 		[],
 	);
@@ -476,7 +499,7 @@ const PlaceView = () => {
 
 					<Card>
 						<ReviewSectionHeader
-							totalReviews={filteredAndSortedReviews.length}
+							totalReviews={place.totalReviews}
 							reviewFilter={reviewFilter}
 							setReviewFilter={setReviewFilter}
 							reviewSort={reviewSort}
@@ -552,3 +575,194 @@ const PlaceView = () => {
 };
 
 export default PlaceView;
+
+const mockedPlaces = [
+	{
+		id: "1",
+		name: "Pinchuk Art Centre",
+		address: "Velyka Vasylkivska St., Baseyna St., 1, 3-2, Kyiv, 01004",
+		rating: 4,
+		totalReviews: 4,
+		types: ["art_gallery", "museum"],
+		coordinates: {
+			lat: 50.44177930000001,
+			lng: 30.5211407,
+		},
+		picture:
+			"https://wiki.kubg.edu.ua/images/c/c3/218-pinchuk-art-centre-75-1448354257.jpg",
+	},
+	{
+		id: "2231",
+		name: "VDNH (Expocenter of Ukraine)",
+		address: "1 Akademika Hlushkova Ave, Kyiv, 03680",
+		rating: 4.6,
+		totalReviews: 12000,
+		types: ["exhibition_center", "park"],
+		coordinates: { lat: 50.3817, lng: 30.4772 },
+		picture:
+			"https://upload.wikimedia.org/wikipedia/commons/0/07/%D0%9A%D0%BE%D0%BC%D0%BF%D0%BB%D0%B5%D0%BA%D1%81_%D0%95%D0%BA%D1%81%D0%BF%D0%BE%D1%86%D0%B5%D0%BD%D1%82%D1%80_%D0%A3%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D0%B8.jpg",
+	},
+	{
+		id: 2,
+		name: "Andriyivskyy Descent",
+		address: "Andriyivskyy Descent, Kyiv, 04053",
+		rating: 4.8,
+		totalReviews: 15000,
+		types: ["historical_street", "attraction"],
+		coordinates: { lat: 50.4594, lng: 30.5171 },
+		picture:
+			"https://destinations.ua/storage/crop/articles/slider_173_max.jpg",
+	},
+	{
+		id: 3,
+		name: "Pyrohiv Museum",
+		address: "1 Pyrohivska St, Kyiv, 03026",
+		rating: 4.7,
+		totalReviews: 8000,
+		types: ["open_air_museum", "park"],
+		coordinates: { lat: 50.3599, lng: 30.5152 },
+		picture:
+			"https://lh3.googleusercontent.com/gps-cs-s/AC9h4npCBjllcM0LKQtHuCNKm_sMgoj5mjqktWV_mhIExEDDJhCSmxOf_CxyyzhHLWRwAv-kLJkwgeLyqOftkGqva27MdDwfAG4EsHYUGD88Hf5WhURjr1tHxOH5HUwj5DFojvp4EiFx=s1360-w1360-h1020-rw",
+	},
+	{
+		id: 4,
+		name: "Natalka Park",
+		address: "Obolonska Embankment, Kyiv, 04211",
+		rating: 4.9,
+		totalReviews: 9500,
+		types: ["park", "recreational_area"],
+		coordinates: { lat: 50.4907, lng: 30.5401 },
+		picture:
+			"https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1c/f8/e0/46/caption.jpg?w=900&h=500&s=1",
+	},
+	{
+		id: 5,
+		name: "Lviv Old Town",
+		address: "Rynok Square, Lviv, 79000",
+		rating: 4.9,
+		totalReviews: 20000,
+		types: ["historical_center", "attraction"],
+		coordinates: { lat: 49.8419, lng: 24.0315 },
+		picture:
+			"https://whc.unesco.org/uploads/thumbs/site_0865_0002-750-750-20151104125432.jpg",
+	},
+	{
+		id: 6,
+		name: "Carpathian Mountains",
+		address: "Zakarpattia Oblast, Ukraine",
+		rating: 4.7,
+		totalReviews: 18000,
+		types: ["mountain_range", "natural_landmark"],
+		coordinates: { lat: 48.2917, lng: 24.5967 },
+		picture:
+			"https://lp-cms-production.imgix.net/2023-10/iStock-1657465139-RFC.jpg",
+	},
+	{
+		id: 7,
+		name: "Odesa Opera and Ballet Theater",
+		address: "48 Lanzheronivska St, Odesa, 65026",
+		rating: 4.8,
+		totalReviews: 11000,
+		types: ["opera_house", "theater"],
+		coordinates: { lat: 46.4851, lng: 30.7408 },
+		picture:
+			"https://lh3.googleusercontent.com/gps-cs-s/AC9h4npqBXvoPIb4BMqyXt56LOZiEL1XGqHC6bJr_ySHXMNgdDgB81EdEfO253D2kGwyQzMR4smmZewf6W9g5JaL9ccnCfJuYaJjmy8fDZZ7hM-i3KP0Go0lszeabhstG1xWSFyi3uRIMw=s1360-w1360-h1020-rw",
+	},
+	{
+		id: 8,
+		name: "Kamianets-Podilskyi Castle",
+		address:
+			"Old Fortress, Kamianets-Podilskyi, Khmelnytskyi Oblast, 32300",
+		rating: 4.9,
+		totalReviews: 9000,
+		types: ["castle", "historical_site"],
+		coordinates: { lat: 48.675, lng: 26.585 },
+		picture:
+			"https://lh3.googleusercontent.com/gps-cs-s/AC9h4npwahLQkdaWj4XrQ3PFKIVyGGJXnp0jOr3YFKH_KWKA5TKbXB4CMWHkX-dd9sK7HbqjPR-myFK_L2L1DHx6iVFPPy00dbPyEjit2ez8yOTLVE1mpp8o9s3IwhzMqq_zsZBoduW2=s1360-w1360-h1020-rw",
+	},
+	{
+		id: 9,
+		name: "Chernivtsi National University",
+		address: "2 Kotsyubynskoho St, Chernivtsi, 58012",
+		rating: 4.7,
+		totalReviews: 7000,
+		types: ["university", "architectural_landmark"],
+		coordinates: { lat: 48.2979, lng: 25.9366 },
+		picture:
+			"https://www.shutterstock.com/search/chernivtsi-national-university",
+	},
+	{
+		id: 10,
+		name: "Sofiyivsky Park",
+		address: "12 Sadova St, Uman, Cherkasy Oblast, 20300",
+		rating: 4.8,
+		totalReviews: 8500,
+		types: ["park", "botanical_garden"],
+		coordinates: { lat: 48.7844, lng: 30.2227 },
+		picture:
+			"https://cdn.tsunamipanel.com/100594/media/galleries/1920/sofievka-park-01.jpg",
+	},
+	{
+		id: "110",
+		name: "Truskavets Wellness Center",
+		address: "2 Sukhomlynov St, Truskavets, Lviv Oblast, 82200",
+		rating: 4.8,
+		totalReviews: 5000,
+		types: ["spa", "wellness_center"],
+		coordinates: { lat: 49.278, lng: 23.51 },
+		picture: "https://cdn.tsn.ua/files/2021/09/28/05a5d01dcb0df1.jpg",
+	},
+	{
+		id: "111",
+		name: "Bukovel Ski Resort",
+		address: "Polianytsia, Ivano-Frankivsk Oblast, 78593",
+		rating: 4.9,
+		totalReviews: 10000,
+		types: ["ski_resort", "recreational_area"],
+		coordinates: { lat: 48.348, lng: 24.406 },
+		picture:
+			"https://www.ukrinform.ua/rubric-tourism/2964873-bukovel-krasivo-vzhe-ale-sezon-na-prirodi-rozpocavsa.html",
+	},
+	{
+		id: "112",
+		name: "Khortytsia Island",
+		address: "Khortytsia Island, Zaporizhzhia, 69017",
+		rating: 4.7,
+		totalReviews: 9000,
+		types: ["island", "historical_site"],
+		coordinates: { lat: 47.867, lng: 35.086 },
+		picture:
+			"https://upload.wikimedia.org/wikipedia/commons/3/3d/Khyrtytsia_Island.jpg",
+	},
+	{
+		id: "113",
+		name: "Apollo Shopping Mall",
+		address: "36 Nezalezhnosti (Titova) St, Dnipro, 49055",
+		rating: 4.2,
+		totalReviews: 6000,
+		types: ["shopping_mall", "entertainment_center"],
+		coordinates: { lat: 48.4357, lng: 34.9754 },
+		picture: "https://cdn.otzyv.ua/data/images/otzyv_41416.jpeg",
+	},
+	{
+		id: "114",
+		name: "Zelenyi Hai Park",
+		address: "31 Nezalezhnosti (Titova) St, Dnipro, 49055",
+		rating: 4.6,
+		totalReviews: 5500,
+		types: ["park"],
+		coordinates: { lat: 48.4363, lng: 34.9782 },
+		picture:
+			"https://upload.wikimedia.org/wikipedia/commons/e/ec/%D0%9F%D0%B0%D1%80%D0%BA_%22%D0%97%D0%B5%D0%BB%D0%B5%D0%BD%D0%B8%D0%B9_%D0%93%D0%B0%D0%B9%22.jpg",
+	},
+	{
+		id: "101",
+		name: "Taras Shevchenko Park",
+		address: "Shevchenko Park, Dnipro, 49000",
+		rating: 4.5,
+		totalReviews: 7000,
+		types: ["park"],
+		coordinates: { lat: 48.4705, lng: 35.0502 },
+		picture: "https://dnipro-foto.com.ua/images/shevchenko-park.jpg",
+	},
+];
