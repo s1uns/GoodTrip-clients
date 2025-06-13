@@ -33,7 +33,11 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import useDebounce from "@/shared/utils/hooks/useDebounce";
-import { showSuccessToast } from "@/shared/utils/helpers/showToast";
+import {
+	showErrorToast,
+	showSuccessToast,
+} from "@/shared/utils/helpers/showToast";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 
 interface Report {
 	id: string;
@@ -494,6 +498,15 @@ export default function AdminReportsPage() {
 		new Set(),
 	);
 
+	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [modalConfig, setModalConfig] = useState<{
+		action: "close" | "delete" | "block" | null;
+		reportId: string;
+		contentType?: string;
+		userId?: string;
+		userName?: string;
+	}>({ action: null, reportId: "" });
+
 	const { t } = useTranslation();
 
 	useEffect(() => {
@@ -543,23 +556,37 @@ export default function AdminReportsPage() {
 		}
 	};
 
-	const handleCloseReport = async (reportId: string) => {
-		if (!confirm(t("reportsPage.confirmCloseReport"))) return;
+	const openCloseReportModal = (reportId: string) => {
+		setModalConfig({
+			action: "close",
+			reportId,
+			contentType: "",
+			userId: "",
+			userName: "",
+		});
+		setIsModalOpen(true);
+	};
 
-		setProcessingActions((prev) => new Set(prev).add(reportId));
+	const handleConfirmCloseReport = async () => {
+		if (!modalConfig.reportId) return;
+
+		setProcessingActions((prev) => new Set(prev).add(modalConfig.reportId));
+		setIsModalOpen(false);
 
 		try {
 			await new Promise((resolve) => setTimeout(resolve, 1000));
 
 			setReports((prev) =>
 				prev.map((report) =>
-					report.id === reportId
+					report.id === modalConfig.reportId
 						? { ...report, status: "resolved" }
 						: report,
 				),
 			);
 
-			const reportIndex = mockReports.findIndex((r) => r.id === reportId);
+			const reportIndex = mockReports.findIndex(
+				(r) => r.id === modalConfig.reportId,
+			);
 			if (reportIndex !== -1) {
 				mockReports[reportIndex].status = "resolved";
 			}
@@ -568,39 +595,44 @@ export default function AdminReportsPage() {
 		} finally {
 			setProcessingActions((prev) => {
 				const newSet = new Set(prev);
-				newSet.delete(reportId);
+				newSet.delete(modalConfig.reportId);
 				return newSet;
 			});
+			setModalConfig({ action: null, reportId: "" });
 		}
 	};
 
-	const handleDeleteContent = async (
-		reportId: string,
-		contentType: string,
-	) => {
-		if (
-			!confirm(
-				t("reportsPage.confirmDeleteContent", {
-					contentType: contentType,
-				}),
-			)
-		)
-			return;
+	const openDeleteContentModal = (reportId: string, contentType: string) => {
+		setModalConfig({
+			action: "delete",
+			reportId,
+			contentType,
+			userId: "",
+			userName: "",
+		});
+		setIsModalOpen(true);
+	};
 
-		setProcessingActions((prev) => new Set(prev).add(reportId));
+	const handleConfirmDeleteContent = async () => {
+		if (!modalConfig.reportId || !modalConfig.contentType) return;
+
+		setProcessingActions((prev) => new Set(prev).add(modalConfig.reportId));
+		setIsModalOpen(false);
 
 		try {
 			await new Promise((resolve) => setTimeout(resolve, 1000));
 
 			setReports((prev) =>
 				prev.map((report) =>
-					report.id === reportId
+					report.id === modalConfig.reportId
 						? { ...report, status: "resolved" }
 						: report,
 				),
 			);
 
-			const reportIndex = mockReports.findIndex((r) => r.id === reportId);
+			const reportIndex = mockReports.findIndex(
+				(r) => r.id === modalConfig.reportId,
+			);
 			if (reportIndex !== -1) {
 				mockReports[reportIndex].status = "resolved";
 			}
@@ -608,58 +640,88 @@ export default function AdminReportsPage() {
 			showSuccessToast(
 				t("reportsPage.contentDeletedSuccess", {
 					contentType:
-						contentType.charAt(0).toUpperCase() +
-						contentType.slice(1),
+						t(`${modalConfig.contentType}Type`)
+							.charAt(0)
+							.toUpperCase() +
+						t(`${modalConfig.contentType}Type`).slice(1),
 				}),
 			);
 		} catch (error) {
-			console.error("Error deleting content:", error);
+			showErrorToast(
+				`Error deleting content:${error || "something went wrong"}`,
+			);
 		} finally {
 			setProcessingActions((prev) => {
 				const newSet = new Set(prev);
-				newSet.delete(reportId);
+				newSet.delete(modalConfig.reportId);
 				return newSet;
 			});
+			setModalConfig({ action: null, reportId: "" });
 		}
 	};
 
-	const handleBlockUser = async (
+	const openBlockUserModal = (
 		reportId: string,
 		userId: string,
 		userName: string,
 	) => {
-		if (!confirm(t("reportsPage.confirmBlockUser", { userName: userName })))
-			return;
+		setModalConfig({
+			action: "block",
+			reportId,
+			contentType: "",
+			userId,
+			userName,
+		});
+		setIsModalOpen(true);
+	};
 
-		setProcessingActions((prev) => new Set(prev).add(reportId));
+	const handleConfirmBlockUser = async () => {
+		if (!modalConfig.reportId || !modalConfig.userId) return;
+
+		setProcessingActions((prev) => new Set(prev).add(modalConfig.reportId));
+		setIsModalOpen(false);
 
 		try {
 			await new Promise((resolve) => setTimeout(resolve, 1000));
 
 			setReports((prev) =>
 				prev.map((report) =>
-					report.id === reportId
+					report.id === modalConfig.reportId
 						? { ...report, status: "resolved" }
 						: report,
 				),
 			);
 
-			const reportIndex = mockReports.findIndex((r) => r.id === reportId);
+			const reportIndex = mockReports.findIndex(
+				(r) => r.id === modalConfig.reportId,
+			);
 			if (reportIndex !== -1) {
 				mockReports[reportIndex].status = "resolved";
 			}
 			showSuccessToast(
-				t("reportsPage.userBlockedSuccess", { userName: userName }),
+				t("reportsPage.userBlockedSuccess", {
+					userName: modalConfig.userName,
+				}),
 			);
 		} catch (error) {
-			console.error("Error blocking user:", error);
+			showErrorToast(
+				`Error blocking user: ${
+					error || "something went wrong, try again later"
+				}`,
+			);
 		} finally {
 			setProcessingActions((prev) => {
 				const newSet = new Set(prev);
-				newSet.delete(reportId);
+				newSet.delete(modalConfig.reportId);
 				return newSet;
 			});
+			setModalConfig({ action: null, reportId: "" });
 		}
+	};
+
+	const handleModalClose = () => {
+		setIsModalOpen(false);
+		setModalConfig({ action: null, reportId: "" });
 	};
 
 	const clearFilters = () => {
@@ -682,6 +744,84 @@ export default function AdminReportsPage() {
 			hour: "2-digit",
 			minute: "2-digit",
 		});
+	};
+
+	const getModalTitle = () => {
+		switch (modalConfig.action) {
+			case "close":
+				return t("reportsPage.closeReportConfirmationTitle");
+			case "delete":
+				return t("reportsPage.deleteContentConfirmationTitle");
+			case "block":
+				return t("reportsPage.blockUserConfirmationTitle");
+			default:
+				return "";
+		}
+	};
+
+	const getModalDescription = () => {
+		switch (modalConfig.action) {
+			case "close":
+				return t("reportsPage.confirmCloseReport");
+			case "delete":
+				return t("reportsPage.confirmDeleteContent", {
+					contentType: modalConfig.contentType,
+				});
+			case "block":
+				return t("reportsPage.confirmBlockUser", {
+					userName: modalConfig.userName,
+				});
+			default:
+				return "";
+		}
+	};
+
+	const getModalItemName = () => {
+		const report = reports.find((r) => r.id === modalConfig.reportId);
+		if (!report) return "";
+		switch (modalConfig.action) {
+			case "delete":
+				return report.reportedContent;
+			case "block":
+				return report.reportedUser.username;
+			default:
+				return "";
+		}
+	};
+
+	const getModalItemType = () => {
+		switch (modalConfig.action) {
+			case "delete":
+				return t(`reportsPage.${modalConfig.contentType}Item`);
+			case "block":
+				return t("reportsPage.userType");
+			default:
+				return "";
+		}
+	};
+
+	const getModalVariant = () => {
+		switch (modalConfig.action) {
+			case "delete":
+			case "block":
+				return "destructive";
+			case "close":
+			default:
+				return "warning";
+		}
+	};
+
+	const getModalOnConfirm = () => {
+		switch (modalConfig.action) {
+			case "close":
+				return handleConfirmCloseReport;
+			case "delete":
+				return handleConfirmDeleteContent;
+			case "block":
+				return handleConfirmBlockUser;
+			default:
+				return () => {};
+		}
 	};
 
 	return (
@@ -1015,7 +1155,7 @@ export default function AdminReportsPage() {
 														variant="outline"
 														size="sm"
 														onClick={() =>
-															handleCloseReport(
+															openCloseReportModal(
 																report.id,
 															)
 														}
@@ -1038,7 +1178,7 @@ export default function AdminReportsPage() {
 														variant="destructive"
 														size="sm"
 														onClick={() =>
-															handleDeleteContent(
+															openDeleteContentModal(
 																report.id,
 																report.type,
 															)
@@ -1067,14 +1207,14 @@ export default function AdminReportsPage() {
 														variant="destructive"
 														size="sm"
 														onClick={() =>
-															handleBlockUser(
+															openBlockUserModal(
 																report.id,
 																report
 																	.reportedUser
 																	.id,
 																report
 																	.reportedUser
-																	.name,
+																	.username,
 															)
 														}
 														disabled={processingActions.has(
@@ -1143,6 +1283,21 @@ export default function AdminReportsPage() {
 					)}
 				</>
 			)}
+			<ConfirmationModal
+				isOpen={isModalOpen}
+				onClose={handleModalClose}
+				onConfirm={getModalOnConfirm()}
+				title={getModalTitle()}
+				description={getModalDescription()}
+				itemName={getModalItemName()}
+				itemType={getModalItemType()}
+				isLoading={
+					modalConfig.reportId
+						? processingActions.has(modalConfig.reportId)
+						: false
+				}
+				variant={getModalVariant()}
+			/>
 		</div>
 	);
 }

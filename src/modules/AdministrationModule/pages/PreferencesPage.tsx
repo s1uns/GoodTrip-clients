@@ -24,57 +24,53 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import useDebounce from "@/shared/utils/hooks/useDebounce";
-import { showSuccessToast } from "@/shared/utils/helpers/showToast";
+import {
+	showErrorToast,
+	showSuccessToast,
+} from "@/shared/utils/helpers/showToast";
+import { TravelCategory } from "@/shared/types/TravelCategory";
+import { TravelTag } from "@/shared/types/TravelTag";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 
-interface Category {
-	id: string;
-	name: string;
-}
-
-interface TravelTag {
-	id: string;
-	name: string;
-}
-
-const mockCategories: Category[] = [
-	{ id: "1", name: "Tropical Beaches" },
-	{ id: "2", name: "Mountain Ranges" },
-	{ id: "3", name: "Metropolitan Cities" },
-	{ id: "4", name: "Rural Countryside" },
-	{ id: "5", name: "Ancient Ruins" },
-	{ id: "6", name: "National Parks" },
-	{ id: "7", name: "Private Islands" },
-	{ id: "8", name: "Desert Landscapes" },
-	{ id: "9", name: "Rainforests" },
-	{ id: "10", name: "Alpine Lakes" },
-	{ id: "11", name: "Coastal Towns" },
-	{ id: "12", name: "Wine Regions" },
-	{ id: "13", name: "Ski Resorts" },
-	{ id: "14", name: "Safari Destinations" },
-	{ id: "15", name: "Volcanic Areas" },
+const mockCategories: TravelCategory[] = [
+	{ categoryId: "1", name: "Tropical Beaches" },
+	{ categoryId: "2", name: "Mountain Ranges" },
+	{ categoryId: "3", name: "Metropolitan Cities" },
+	{ categoryId: "4", name: "Rural Countryside" },
+	{ categoryId: "5", name: "Ancient Ruins" },
+	{ categoryId: "6", name: "National Parks" },
+	{ categoryId: "7", name: "Private Islands" },
+	{ categoryId: "8", name: "Desert Landscapes" },
+	{ categoryId: "9", name: "Rainforests" },
+	{ categoryId: "10", name: "Alpine Lakes" },
+	{ categoryId: "11", name: "Coastal Towns" },
+	{ categoryId: "12", name: "Wine Regions" },
+	{ categoryId: "13", name: "Ski Resorts" },
+	{ categoryId: "14", name: "Safari Destinations" },
+	{ categoryId: "15", name: "Volcanic Areas" },
 ];
 
 const mockTags: TravelTag[] = [
-	{ id: "1", name: "Adventure Sports" },
-	{ id: "2", name: "Cultural Immersion" },
-	{ id: "3", name: "Food & Cuisine" },
-	{ id: "4", name: "Photography" },
-	{ id: "5", name: "Historical Sites" },
-	{ id: "6", name: "Nature & Wildlife" },
-	{ id: "7", name: "Relaxation & Wellness" },
-	{ id: "8", name: "Nightlife & Entertainment" },
-	{ id: "9", name: "Shopping & Markets" },
-	{ id: "10", name: "Art & Museums" },
-	{ id: "11", name: "Music & Festivals" },
-	{ id: "12", name: "Architecture" },
-	{ id: "13", name: "Local Transportation" },
-	{ id: "14", name: "Street Food" },
-	{ id: "15", name: "Luxury Travel" },
-	{ id: "16", name: "Budget Travel" },
-	{ id: "17", name: "Solo Travel" },
-	{ id: "18", name: "Family Travel" },
-	{ id: "19", name: "Eco Tourism" },
-	{ id: "20", name: "Volunteer Travel" },
+	{ tagId: "1", name: "Adventure Sports" },
+	{ tagId: "2", name: "Cultural Immersion" },
+	{ tagId: "3", name: "Food & Cuisine" },
+	{ tagId: "4", name: "Photography" },
+	{ tagId: "5", name: "Historical Sites" },
+	{ tagId: "6", name: "Nature & Wildlife" },
+	{ tagId: "7", name: "Relaxation & Wellness" },
+	{ tagId: "8", name: "Nightlife & Entertainment" },
+	{ tagId: "9", name: "Shopping & Markets" },
+	{ tagId: "10", name: "Art & Museums" },
+	{ tagId: "11", name: "Music & Festivals" },
+	{ tagId: "12", name: "Architecture" },
+	{ tagId: "13", name: "Local Transportation" },
+	{ tagId: "14", name: "Street Food" },
+	{ tagId: "15", name: "Luxury Travel" },
+	{ tagId: "16", name: "Budget Travel" },
+	{ tagId: "17", name: "Solo Travel" },
+	{ tagId: "18", name: "Family Travel" },
+	{ tagId: "19", name: "Eco Tourism" },
+	{ tagId: "20", name: "Volunteer Travel" },
 ];
 
 const ITEMS_PER_PAGE = 8;
@@ -123,7 +119,7 @@ const simulateApiCall = <T,>(
 };
 
 export default function AdminPreferencesPage() {
-	const [categories, setCategories] = useState<Category[]>([]);
+	const [categories, setCategories] = useState<TravelCategory[]>([]);
 	const [categoriesLoading, setCategoriesLoading] = useState(true);
 	const [categoriesLoadingMore, setCategoriesLoadingMore] = useState(false);
 	const [categoriesPage, setCategoriesPage] = useState(1);
@@ -141,6 +137,11 @@ export default function AdminPreferencesPage() {
 	const debouncedCategorySearch = useDebounce(categoriesSearch);
 	const debouncedTagSearch = useDebounce(tagsSearch);
 
+	const [categoryToDelete, setCategoryToDelete] =
+		useState<TravelCategory | null>(null);
+	const [tagToDelete, setTagToDelete] = useState<TravelTag | null>(null);
+	const [deleting, setDeleting] = useState(false);
+
 	const [newCategoryName, setNewCategoryName] = useState("");
 	const [newTagName, setNewTagName] = useState("");
 	const [addingCategory, setAddingCategory] = useState(false);
@@ -152,6 +153,8 @@ export default function AdminPreferencesPage() {
 	const [editTagName, setEditTagName] = useState("");
 	const { t } = useTranslation();
 	const [activeTab, setActiveTab] = useState("categories");
+	const [updatingCategory, setUpdatingCategory] = useState(false);
+	const [updatingTag, setUpdatingTag] = useState(false);
 
 	useEffect(() => {
 		loadCategories(true);
@@ -171,6 +174,13 @@ export default function AdminPreferencesPage() {
 		setTagsHasMore(true);
 		loadTags(true);
 	}, [debouncedTagSearch]);
+
+	const handleOpenDeleteCategoryModal = (category: TravelCategory) =>
+		setCategoryToDelete(category);
+	const handleCloseDeleteCategoryModal = () => setCategoryToDelete(null);
+
+	const handleOpenDeleteTagModal = (tag: TravelTag) => setTagToDelete(tag);
+	const handleCloseDeleteTagModal = () => setTagToDelete(null);
 
 	const loadCategories = async (isInitial = false) => {
 		if (isInitial) {
@@ -247,8 +257,8 @@ export default function AdminPreferencesPage() {
 		try {
 			await new Promise((resolve) => setTimeout(resolve, 1000));
 
-			const newCategory: Category = {
-				id: Date.now().toString(),
+			const newCategory: TravelCategory = {
+				categoryId: Date.now().toString(),
 				name: newCategoryName.trim(),
 			};
 
@@ -263,10 +273,10 @@ export default function AdminPreferencesPage() {
 				setCategories((prev) => [newCategory, ...prev]);
 				setCategoriesTotalCount((prev) => prev + 1);
 			}
-			showSuccessToast("Category created successfully");
+			showSuccessToast(t("toasts.travelCategoryCreated"));
 			setNewCategoryName("");
 		} catch (error) {
-			console.error("Error adding category:", error);
+			showErrorToast(t("toasts.somethingWentWrong"));
 		} finally {
 			setAddingCategory(false);
 		}
@@ -280,7 +290,7 @@ export default function AdminPreferencesPage() {
 			await new Promise((resolve) => setTimeout(resolve, 1000));
 
 			const newTag: TravelTag = {
-				id: Date.now().toString(),
+				tagId: Date.now().toString(),
 				name: newTagName.trim(),
 			};
 
@@ -293,53 +303,70 @@ export default function AdminPreferencesPage() {
 				setTags((prev) => [newTag, ...prev]);
 				setTagsTotalCount((prev) => prev + 1);
 			}
-			showSuccessToast("Tag created successfully");
+			showSuccessToast(t("toasts.tagCreated"));
 			setNewTagName("");
 		} catch (error) {
-			console.error("Error adding tag:", error);
+			showErrorToast(t("toasts.somethingWentWrong"));
 		} finally {
 			setAddingTag(false);
 		}
 	};
 
-	const handleDeleteCategory = async (categoryId: string) => {
-		if (!confirm("Are you sure you want to delete this category?")) return;
-
+	const handleDeleteCategory = async () => {
 		try {
+			setDeleting(true);
+
 			await new Promise((resolve) => setTimeout(resolve, 500));
 
-			const index = mockCategories.findIndex((c) => c.id === categoryId);
+			const index = mockCategories.findIndex(
+				(c) => c.categoryId === categoryToDelete?.categoryId,
+			);
 			if (index !== -1) {
 				mockCategories.splice(index, 1);
 			}
 
-			setCategories((prev) => prev.filter((c) => c.id !== categoryId));
+			setCategories((prev) =>
+				prev.filter(
+					(c) => c.categoryId !== categoryToDelete?.categoryId,
+				),
+			);
 			setCategoriesTotalCount((prev) => prev - 1);
+			handleCloseDeleteCategoryModal();
+			showSuccessToast(t("toasts.categoryDeleted"));
 		} catch (error) {
-			console.error("Error deleting category:", error);
+			showErrorToast(t("toasts.somethingWentWrong"));
+		} finally {
+			setDeleting(false);
 		}
 	};
 
-	const handleDeleteTag = async (tagId: string) => {
-		if (!confirm("Are you sure you want to delete this tag?")) return;
-
+	const handleDeleteTag = async () => {
 		try {
+			setDeleting(true);
 			await new Promise((resolve) => setTimeout(resolve, 500));
 
-			const index = mockTags.findIndex((t) => t.id === tagId);
+			const index = mockTags.findIndex(
+				(t) => t.tagId === tagToDelete?.tagId,
+			);
 			if (index !== -1) {
 				mockTags.splice(index, 1);
 			}
 
-			setTags((prev) => prev.filter((t) => t.id !== tagId));
+			setTags((prev) =>
+				prev.filter((t) => t.tagId !== tagToDelete?.tagId),
+			);
 			setTagsTotalCount((prev) => prev - 1);
+			handleCloseDeleteTagModal();
+			showSuccessToast(t("toasts.tagDeleted"));
 		} catch (error) {
-			console.error("Error deleting tag:", error);
+			showErrorToast(t("toasts.somethingWentWrong"));
+		} finally {
+			setDeleting(false);
 		}
 	};
 
-	const startEditCategory = (category: Category) => {
-		setEditingCategory(category.id);
+	const startEditCategory = (category: TravelCategory) => {
+		setEditingCategory(category.categoryId);
 		setEditCategoryName(category.name);
 	};
 
@@ -347,10 +374,11 @@ export default function AdminPreferencesPage() {
 		if (!editCategoryName.trim()) return;
 
 		try {
+			setUpdatingCategory(true);
 			await new Promise((resolve) => setTimeout(resolve, 500));
 
 			const index = mockCategories.findIndex(
-				(c) => c.id === editingCategory,
+				(c) => c.categoryId === editingCategory,
 			);
 			if (index !== -1) {
 				mockCategories[index] = {
@@ -361,21 +389,23 @@ export default function AdminPreferencesPage() {
 
 			setCategories((prev) =>
 				prev.map((c) =>
-					c.id === editingCategory
+					c.categoryId === editingCategory
 						? { ...c, name: editCategoryName.trim() }
 						: c,
 				),
 			);
 
-			showSuccessToast("Category updated successfully");
+			showSuccessToast(t("toasts.travelCategoryUpdated"));
 			setEditingCategory(null);
 		} catch (error) {
-			console.error("Error updating category:", error);
+			showErrorToast(t("toasts.somethingWentWrong"));
+		} finally {
+			setUpdatingCategory(false);
 		}
 	};
 
 	const startEditTag = (tag: TravelTag) => {
-		setEditingTag(tag.id);
+		setEditingTag(tag.tagId);
 		setEditTagName(tag.name);
 	};
 
@@ -383,9 +413,11 @@ export default function AdminPreferencesPage() {
 		if (!editTagName.trim()) return;
 
 		try {
+			setUpdatingTag(true);
+
 			await new Promise((resolve) => setTimeout(resolve, 500));
 
-			const index = mockTags.findIndex((t) => t.id === editingTag);
+			const index = mockTags.findIndex((t) => t.tagId === editingTag);
 			if (index !== -1) {
 				mockTags[index] = {
 					...mockTags[index],
@@ -395,16 +427,18 @@ export default function AdminPreferencesPage() {
 
 			setTags((prev) =>
 				prev.map((t) =>
-					t.id === editingTag
+					t.tagId === editingTag
 						? { ...t, name: editTagName.trim() }
 						: t,
 				),
 			);
-			showSuccessToast("Tag updated successfully");
 
+			showSuccessToast(t("toasts.tagUpdated"));
 			setEditingTag(null);
 		} catch (error) {
-			console.error("Error updating tag:", error);
+			showErrorToast(t("toasts.somethingWentWrong"));
+		} finally {
+			setUpdatingTag(false);
 		}
 	};
 
@@ -535,11 +569,11 @@ export default function AdminPreferencesPage() {
 										<div className="space-y-3">
 											{categories.map((category) => (
 												<div
-													key={category.id}
+													key={category.categoryId}
 													className="flex items-center justify-between p-3 border rounded-lg"
 												>
 													{editingCategory ===
-													category.id ? (
+													category.categoryId ? (
 														<div className="flex-1 space-y-2 mr-4">
 															<Input
 																value={
@@ -561,10 +595,24 @@ export default function AdminPreferencesPage() {
 																	onClick={
 																		saveEditCategory
 																	}
+																	disabled={
+																		updatingCategory
+																	}
 																>
-																	<Save className="w-4 h-4 mr-1" />
-																	{t(
-																		"common.save",
+																	{updatingCategory ? (
+																		<>
+																			<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+																			{t(
+																				"common.saving",
+																			)}
+																		</>
+																	) : (
+																		<>
+																			<Save className="w-4 h-4 mr-1" />
+																			{t(
+																				"common.save",
+																			)}
+																		</>
 																	)}
 																</Button>
 																<Button
@@ -608,8 +656,8 @@ export default function AdminPreferencesPage() {
 																	variant="outline"
 																	size="sm"
 																	onClick={() =>
-																		handleDeleteCategory(
-																			category.id,
+																		handleOpenDeleteCategoryModal(
+																			category,
 																		)
 																	}
 																>
@@ -742,10 +790,11 @@ export default function AdminPreferencesPage() {
 										<div className="space-y-3">
 											{tags.map((tag) => (
 												<div
-													key={tag.id}
+													key={tag.tagId}
 													className="flex items-center justify-between p-3 border rounded-lg"
 												>
-													{editingTag === tag.id ? (
+													{editingTag ===
+													tag.tagId ? (
 														<div className="flex-1 space-y-2 mr-4">
 															<Input
 																value={
@@ -767,10 +816,24 @@ export default function AdminPreferencesPage() {
 																	onClick={
 																		saveEditTag
 																	}
+																	disabled={
+																		updatingTag
+																	}
 																>
-																	<Save className="w-4 h-4 mr-1" />
-																	{t(
-																		"common.save",
+																	{updatingTag ? (
+																		<>
+																			<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+																			{t(
+																				"common.saving",
+																			)}
+																		</>
+																	) : (
+																		<>
+																			<Save className="w-4 h-4 mr-1" />
+																			{t(
+																				"common.save",
+																			)}
+																		</>
 																	)}
 																</Button>
 																<Button
@@ -812,8 +875,8 @@ export default function AdminPreferencesPage() {
 																	variant="outline"
 																	size="sm"
 																	onClick={() =>
-																		handleDeleteTag(
-																			tag.id,
+																		handleOpenDeleteTagModal(
+																			tag,
 																		)
 																	}
 																>
@@ -858,6 +921,42 @@ export default function AdminPreferencesPage() {
 					</div>
 				</TabsContent>
 			</Tabs>
+
+			{categoryToDelete || tagToDelete ? (
+				<ConfirmationModal
+					isOpen={Boolean(categoryToDelete || tagToDelete)}
+					onClose={
+						categoryToDelete
+							? handleCloseDeleteCategoryModal
+							: handleCloseDeleteTagModal
+					}
+					onConfirm={
+						categoryToDelete
+							? handleDeleteCategory
+							: handleDeleteTag
+					}
+					title={
+						categoryToDelete
+							? t("categories.delete_title")
+							: t("tags.delete_title")
+					}
+					description={
+						categoryToDelete
+							? t("categories.delete_description")
+							: t("tags.delete_description")
+					}
+					itemName={
+						categoryToDelete
+							? categoryToDelete.name
+							: tagToDelete?.name
+					}
+					itemType={
+						categoryToDelete ? t("categoryType") : t("tagType")
+					}
+					isLoading={deleting}
+					variant="destructive"
+				/>
+			) : null}
 		</div>
 	);
 }

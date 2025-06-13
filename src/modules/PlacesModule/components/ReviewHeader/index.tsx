@@ -1,10 +1,11 @@
-import { memo, useCallback, Dispatch, SetStateAction } from "react";
+import { memo, useCallback, Dispatch, SetStateAction, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, Flag } from "lucide-react";
 import Stars from "../Stars";
 import { ENTITY_REVIEW } from "@/shared/constants/place";
 import { convertDateToDDMonYYYY } from "@/shared/utils/helpers/convertDateToDDMonYYYY";
 import { useTranslation } from "react-i18next";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 
 interface ReviewHeaderProps {
 	id: string;
@@ -30,11 +31,19 @@ const ReviewHeader = memo<ReviewHeaderProps>(
 		deleteReview,
 		openReportDialog,
 	}) => {
-		const handleDeleteReview = useCallback(
-			() => deleteReview(id),
-			[id, deleteReview],
-		);
+		const { t } = useTranslation();
+		const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+		const [deleting, setDeleting] = useState(false);
 		const { i18n } = useTranslation();
+
+		const handleDeleteReview = useCallback(async () => {
+			setDeleting(true);
+			await deleteReview(id);
+			setDeleting(false);
+		}, [id, deleteReview]);
+
+		const handleOpenDeletionModal = () => setDeleteModalOpen(true);
+		const handleCloseDeletionModal = () => setDeleteModalOpen(false);
 
 		return (
 			<div className="flex items-start justify-between mb-3">
@@ -64,7 +73,7 @@ const ReviewHeader = memo<ReviewHeaderProps>(
 							<Button
 								variant="ghost"
 								size="sm"
-								onClick={handleDeleteReview}
+								onClick={handleOpenDeletionModal}
 							>
 								<Trash2 className="w-4 h-4" />
 							</Button>
@@ -79,6 +88,21 @@ const ReviewHeader = memo<ReviewHeaderProps>(
 							<Flag className="w-4 h-4" />
 						</Button>
 					)}
+					{deleteModalOpen ? (
+						<ConfirmationModal
+							isOpen={deleteModalOpen}
+							onClose={handleCloseDeletionModal}
+							onConfirm={handleDeleteReview}
+							title={t("placeView.delete_review_title")}
+							description={t(
+								"placeView.delete_review_description",
+							)}
+							itemName={`${t("by")} ${username}`}
+							itemType={t("reviewType")}
+							isLoading={deleting}
+							variant="destructive"
+						/>
+					) : null}
 				</div>
 			</div>
 		);

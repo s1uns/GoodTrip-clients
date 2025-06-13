@@ -122,7 +122,7 @@ export default function UserInfoTab() {
 						)}
 						{isEditing
 							? saving
-								? t("saving")
+								? t("common.saving")
 								: t("profileInfo.save")
 							: t("profileInfo.edit")}
 					</Button>
