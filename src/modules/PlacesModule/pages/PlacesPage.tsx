@@ -978,7 +978,7 @@ const mockedPlaces = [
 		name: "Apollo Shopping Mall",
 		address: "36 Nezalezhnosti (Titova) St, Dnipro, 49055",
 		city: "Dnipro",
-		image: "https://lh3.googleusercontent.com/p/AF1QipNyMhQt_6IflHqZYKTYIq_TIOzfInVxmTgfX8md=s1360-w1360-h1020-rw",
+		image: "https://gorod.dp.ua/pic/news/newsimages/0220/169937_b.jpg",
 		travelTags: ["shopping", "entertainment", "family-travel"],
 		travelCategories: ["shopping-malls", "entertainment-centers"],
 		rating: 4.2,
